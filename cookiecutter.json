@@ -1,6 +1,6 @@
 {
-    "package": "package1",
-    "module_name":"module1",
-    "description": "Description of module1",
-    "authors": "AperVox developers <contact@lytica.ai>"
+    "package": "research",
+    "module_name":"research-assitant",
+    "description": "Use LLM to help you in your research",
+    "authors": "Luis Garma <garmahds@gmail.com>"
 }
