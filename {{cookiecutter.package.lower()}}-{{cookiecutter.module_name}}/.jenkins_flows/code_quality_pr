@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+    stages {
+        stage('Installation') {
+            steps {
+                sh 'poetry install --no-interaction --no-ansi -vvv'
+            }
+            post {
+                success {
+                    echo 'Se realizó la instalación correctamente'
+                }
+                failure {
+                    echo 'Ocurrió un problema al realizar la instalación'
+                }
+            }
+        }
+        stage('trailing-whitespace') {
+            steps {
+                sh 'poetry run pre-commit run --all-files trailing-whitespace'
+            }
+        }
+        stage('check-executables-have-shebangs') {
+            steps {
+                sh 'poetry run pre-commit run --all-files check-executables-have-shebangs'
+            }
+        }
+        stage('debug-statements') {
+            steps {
+                sh 'poetry run pre-commit run --all-files debug-statements'
+            }
+        }
+        stage('check-merge-conflict') {
+            steps {
+                sh 'poetry run pre-commit run --all-files check-merge-conflict'
+            }
+        }
+        stage('name-tests-test') {
+            steps {
+                sh 'poetry run pre-commit run --all-files name-tests-test'
+            }
+        }
+        stage('flake8') {
+            steps {
+                sh 'poetry run pre-commit run --all-files flake8'
+            }
+        }
+        stage('black') {
+            steps {
+                sh 'poetry run pre-commit run --all-files black'
+            }
+        }
+        stage('bandit') {
+            steps {
+                sh 'poetry run pre-commit run --all-files bandit'
+            }
+        }
+        stage('isort') {
+            steps {
+                sh 'poetry run pre-commit run --all-files isort'
+            }
+        }
+    }
+}
