@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+
+    environment {
+        GITHUB_BASE_BRANCH = "$github_base_branch_pr"
+        GITHUB_BRANCH = "$github_branch_pr"
+        PR_NUMBER = "$pr_number"
+        JENKINS_PAT = credentials('github-pat')
+        OWNER = "lyticamx"
+        REPOSITORY = "research-research-assistant"
+    }
+
+    stages {
+        stage('Execute jobs') {
+            steps {
+                parallel(
+                    code_quality: {
+                        build job:'Analysis/research-project/research-assistant/code_quality_pr' , parameters:[
+                            [$class: 'StringParameterValue',name: 'github_base_branch_pr',value: "${GITHUB_BASE_BRANCH}"],
+                            [$class: 'StringParameterValue',name: 'github_branch_pr',value: "${GITHUB_BRANCH}"]
+                        ]
+                    }
+                )
+            }
+            post {
+                failure {
+                    script{
+                        final String url = "https://api.github.com/repos/$OWNER/$REPOSITORY/pulls/$PR_NUMBER/reviews"
+                        final String personal_access_token="$JENKINS_PAT"
+                        final String auth = "Authorization: token '$personal_access_token'"
+                        final String failure_event = '{"event": "COMMENT", "body": "Some checks failed"}'
+                        final String response = sh(script: "curl --request POST --url '$url' --header '$auth' --data '$failure_event'", returnStdout: true).trim()
+                        echo response
+                    }
+                }
+            }
+        }
+        stage('Review PR') {
+            steps {
+                script{
+                    final String url = "https://api.github.com/repos/$OWNER/$REPOSITORY/pulls/$PR_NUMBER/reviews"
+                    final String personal_access_token="$JENKINS_PAT"
+                    final String auth = "Authorization: token '$personal_access_token'"
+                    final String success_event = '{"event": "APPROVE"}'
+                    final String response = sh(script: "curl --request POST --url '$url' --header '$auth' --data '$success_event'", returnStdout: true).trim()
+                }
+            }
+        }
+    }
+}

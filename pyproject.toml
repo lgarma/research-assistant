@@ -1,0 +1,63 @@
+[tool.poetry]
+name = "researchResearch-assistant"
+version = "0.1.0"
+description = "Use llm to help you in your research - Module Research-assistant"
+authors = ["Luis garma <garmahds@gmail.com>"]
+packages = [{include="researchResearch-assistant"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+pydantic = "1.8.2"
+
+[tool.poetry.group.dev.dependencies]
+black = "22.1.0"
+click = "8.0.2"
+coverage = "5.3"
+flake8 = "3.8.4"
+flake8-isort = "4.0.0"
+flake8-docstrings = "1.5.0"
+isort = "5.8.0"
+ipykernel = "6.6.0"
+ipympl = "0.8.2"
+ipywidgets = "7.6.5"
+Jinja2 = "3.0.3"
+jovian = "0.2.41"
+jupyter-contrib-nbextensions = "0.5.1"
+jupyter-dash = "0.4.1"
+jupyterlab = "3.5.0"
+matplotlib = "3.5.0"
+memory-profiler = "0.58.0"
+mike = "1.1.2"
+mkdocs = "1.2.3"
+mkdocs-material = "7.3.6"
+mkdocstrings = "0.19"
+mkdocstrings-python = "0.7.1"
+moviepy = "1.0.3"
+mypy = "0.910"
+plotly = "5.6.0"
+pre-commit = "2.9.2"
+psutil = "5.8.0"
+pyinstrument = "3.3.0"
+pytest = "7.1.1"
+pytest-cov = "2.10.1"
+pytest-watch = "4.2.0"
+streamlit = "1.10.0"
+
+[tool.isort]
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+default_section = "THIRDPARTY"
+known_third_party = []
+known_first_party = ["researchResearch-assistant"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
