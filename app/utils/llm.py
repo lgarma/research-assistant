@@ -1,15 +1,13 @@
 """Utility functions for the app."""
 
 import streamlit as st
-from app.utils.utils import get_arxiv_documents
+from app.utils.utils import get_arxiv_abstracts
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
 from langchain.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
-
-chat = st.session_state.chat
 
 
 def get_response_schema_for_keywords():
@@ -59,7 +57,7 @@ def get_chat_keyword_suggestions(question: str) -> dict:
     )
 
     _input = prompt.format_prompt(question=question)
-    output = chat(_input.to_messages())
+    output = st.session_state.chat(_input.to_messages())
     return output_parser.parse(output.content)
 
 
@@ -92,7 +90,7 @@ def refine_keywords(question: str, keywords: list[str], papers: list[str]) -> di
     )
 
     _input = prompt.format_prompt(question=question, keywords=keywords, papers=papers)
-    output = chat(_input.to_messages())
+    output = st.session_state.chat(_input.to_messages())
     return output_parser.parse(output.content)
 
 
@@ -107,10 +105,10 @@ def get_keyword_suggestions(question: str):
     """
     first_suggestion = get_chat_keyword_suggestions(question=question)
 
-    top_papers = get_arxiv_documents(query=first_suggestion["keywords"], max_results=10)
+    top_papers = get_arxiv_abstracts(query=first_suggestion["keywords"], max_results=10)
 
     top_papers = [
-        paper.metadata["Title"] + ", " + str(paper.metadata["Published"])
+        paper.metadata["title"] + ", " + str(paper.metadata["published"])
         for paper in top_papers
     ]
 
@@ -118,5 +116,5 @@ def get_keyword_suggestions(question: str):
         question=question, keywords=first_suggestion["keywords"], papers=top_papers
     )
 
-    st.session_state["keywords"] = first_suggestion["keywords"]
+    st.session_state["first_suggestion"] = first_suggestion["keywords"]
     return refined_suggestions
