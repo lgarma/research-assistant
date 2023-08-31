@@ -16,3 +16,10 @@ def init_app():
     set_state_if_absent(key="question", value="How do spiral arms form?")
     set_state_if_absent(key="sentence_model", value="multi-qa-mpnet-base-dot-v1")
     set_state_if_absent(key="app_state", value="initialized")
+
+
+def reset_app():
+    """Reset the app."""
+    for key in st.session_state:
+        del st.session_state[key]
+    init_app()

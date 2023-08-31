@@ -13,9 +13,9 @@ langchain = "0.0.265"
 openai = "0.27.8"
 arxiv = "1.4.8"
 pymupdf = "1.22.5"
-streamlit-tags = "^1.2.8"
-streamlit = "^1.26.0"
-pymilvus = "^2.3.0"
+streamlit-tags = "1.2.8"
+streamlit = "1.26.0"
+pymilvus = "2.3.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "22.1.0"
