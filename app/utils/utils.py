@@ -72,8 +72,27 @@ def download_abstracts():
         vector_db = get_vector_db(
             docs=bulk_papers,
             collection_name=clean_string(state["question"]),
-            embedding_function=HuggingFaceEmbeddings(model_name=state.sentence_model),
+            embedding_function=HuggingFaceEmbeddings(
+                model_name=state.sentence_model,
+                encode_kwargs={"normalize_embeddings": True},
+            ),
         )
         state["vector_db"] = vector_db
 
         st.write("Done!")
+
+
+def display_recomended_papers(papers: list[dict], chat_suggestions: dict):
+    """Display the recommended papers."""
+    for i, paper in enumerate(chat_suggestions):
+
+        st.write(f"## {papers[i]['title']}")
+        if paper.score >= 4:
+            st.success("Highly recommended for your research")
+        st.write(f"Authors: {papers[i]['authors']}")
+        st.write(f"Published: {papers[i]['published']}")
+        st.write(f"Topics: {paper.topics}")
+        st.write(f"Score: {paper.score}")
+        st.write(f"Reasoning: {paper.reasoning}")
+        with st.expander("Show Abstract"):
+            st.write(papers[i]["abstract"])

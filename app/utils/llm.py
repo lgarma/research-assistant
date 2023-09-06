@@ -3,11 +3,14 @@
 import streamlit as st
 from app.utils.utils import get_arxiv_abstracts
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
+from langchain.output_parsers.pydantic import PydanticOutputParser
 from langchain.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
+from langchain.prompts.chat import AIMessage
+from pydantic import BaseModel, Field
 
 
 def get_response_schema_for_keywords():
@@ -118,3 +121,96 @@ def get_keyword_suggestions(question: str):
 
     st.session_state["first_suggestion"] = first_suggestion["keywords"]
     return refined_suggestions
+
+
+class LabelPapers:
+    """Label tha papers using an LLM"""
+
+    def __init__(self, question: str, papers: list[dict]):
+        """Initialize the LabelChat."""
+        self.question = question
+        self.papers = papers
+        self.output_parser = None
+
+    @staticmethod
+    def get_parser():
+        """Get the parser for the LLM output."""
+
+        class Papers(BaseModel):
+            title: str = Field(description="paper title")
+            topics: list = Field(description="Topics that best describe the paper.")
+            score: int = Field(
+                description="Rate from 1 to 5 how relevant is the paper "
+                "for the user research. 5 is a must read, "
+                "1 is irrelevant"
+            )
+            reasoning: str = Field(description="short explanation for the score")
+
+        return PydanticOutputParser(pydantic_object=Papers)
+
+    @staticmethod
+    def _get_format_instructions():
+        """Response schema for the LLM"""
+        response_schemas = [
+            ResponseSchema(name="title", description="Paper title"),
+            ResponseSchema(
+                name="topics",
+                description="Topics that best describe the paper.",
+                type="list",
+            ),
+            ResponseSchema(
+                name="score",
+                description="Rate from 1 to 5 how relevant is the paper "
+                "for the user research. 5 is a must read, 1 is irrelevant",
+                type="int",
+            ),
+            ResponseSchema(
+                name="reasoning", description="short explanation for the score"
+            ),
+        ]
+        json_parser = StructuredOutputParser.from_response_schemas(response_schemas)
+        format_instructions = json_parser.get_format_instructions()
+
+        format_instructions += (
+            "\n\nIf the user provides multiple papers, "
+            "use a separate the markdown snippets using a divider "
+            "'---' "
+        )
+        return format_instructions
+
+    def get_chat_labels(self):
+        """Ask chatgpt to label the papers"""
+        format_instruction = self._get_format_instructions()
+        prompt = ChatPromptTemplate(
+            messages=[
+                SystemMessagePromptTemplate.from_template(
+                    "Help the user with their research as best as possible. "
+                    "\n{format_instruction}"
+                ),
+                HumanMessagePromptTemplate.from_template(
+                    "I want to research: {question}. \n\n"
+                    "Here are some papers I downloaded from arxiv. "
+                    "All of them are semantically close to my research, "
+                    "however, I dont have the time to read them all. "
+                    "Using the title, abstract and the published time, "
+                    "help me indentify the most relevant papers for my research. "
+                    "\n\n"
+                    "{papers}"
+                ),
+            ],
+            input_variables=["question", "papers"],
+            partial_variables={"format_instruction": format_instruction},
+        )
+        _input = prompt.format_prompt(
+            question=self.question,
+            papers=self.papers,
+        )
+
+        output = st.session_state.chat(_input.to_messages())
+        return self.parse_output(output)
+
+    def parse_output(self, output: AIMessage) -> list[dict]:
+        """Use output parser to parse the output"""
+        pydantic_parser = self.get_parser()
+        split = output.content.split("---")
+        return [pydantic_parser.parse(s) for s in split]
