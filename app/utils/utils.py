@@ -23,36 +23,42 @@ def get_arxiv_abstracts(
     Saves them in a list of Document objects. Keeps the title, authors, link, journal
     and comment as metadata.
     """
-    results = arxiv.Search(
-        query=query,
-        max_results=max_results,
-        sort_by=arxiv.SortCriterion.Relevance
-        if sort_by == "Relevance"
-        else arxiv.SortCriterion.SubmittedDate,
+    # If the request is too big, we need to use a slower client
+    if max_results > 500:
+        client = arxiv.Client(page_size=500, delay_seconds=5, num_retries=7)
+        st.write("Using big slow client")
+    else:
+        client = arxiv.Client(page_size=100, delay_seconds=3, num_retries=3)
+        st.write("Using small fast client")
+
+    st.write(client)
+    results = client.results(
+        arxiv.Search(
+            query=query,
+            max_results=max_results,
+            sort_by=arxiv.SortCriterion.Relevance
+            if sort_by == "Relevance"
+            else arxiv.SortCriterion.SubmittedDate,
+        )
     )
     docs = []
-    for result in results.results():
-        docs.append(
-            Document(
-                page_content=result.summary,
-                metadata={
-                    "published": result.published.year,
-                    "title": result.title,
-                    "authors": ", ".join([author.name for author in result.authors]),
-                    "link": result.entry_id,
-                },
+    for i, result in enumerate(results):
+        try:
+            docs.append(
+                Document(
+                    page_content=result.summary,
+                    metadata={
+                        "published": result.published.year,
+                        "title": result.title,
+                        "authors": ", ".join(
+                            [author.name for author in result.authors]
+                        ),
+                        "link": result.entry_id,
+                    },
+                )
             )
-        )
-        if result.journal_ref is not None:
-            docs[-1].metadata.update({"journal": result.journal_ref})
-        else:
-            docs[-1].metadata.update({"journal": "not available"})
-
-        if result.comment is not None:
-            docs[-1].metadata.update({"comment": result.comment})
-        else:
-            docs[-1].metadata.update({"comment": "not available"})
-
+        except Exception as e:
+            st.write(f"Error: {e}", i)
     return docs
 
 
@@ -62,7 +68,7 @@ def download_abstracts():
     The collection name is the cleaned question string.
     """
     state = st.session_state
-    with state.placeholder.status("Downloading abstracts...", expanded=True):
+    with state.placeholder.status("Downloading abstracts...", expanded=False):
         st.write("Downloading abstracts...")
         bulk_papers = get_arxiv_abstracts(
             query=state["chat_suggestions"]["keywords"],
@@ -86,11 +92,13 @@ def display_recomended_papers(papers: list[dict], chat_suggestions: dict):
     """Display the recommended papers."""
     for i, paper in enumerate(chat_suggestions):
 
-        st.write(f"## {papers[i]['title']}")
+        st.write(f"#### {papers[i]['title']}")
         if paper.score >= 4:
             st.success("Highly recommended for your research")
         st.write(f"Authors: {papers[i]['authors']}")
         st.write(f"Published: {papers[i]['published']}")
+        # Add arxiv link
+        st.write(f"Link: {papers[i]['link']}")
         st.write(f"Topics: {paper.topics}")
         st.write(f"Score: {paper.score}")
         st.write(f"Reasoning: {paper.reasoning}")
