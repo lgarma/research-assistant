@@ -2,6 +2,7 @@
 
 import streamlit as st
 from app.utils.utils import download_abstracts
+from pymilvus import utility
 from streamlit_tags import st_tags
 from utils.llm import LabelPapers, get_keyword_suggestions
 from utils.ui import init_session_states, reset_app, start_app
@@ -18,7 +19,15 @@ if state.app_state is None:
 st.title("Research Assistant")
 st.sidebar.button("Reset app", on_click=reset_app)
 st.sidebar.button("Do nothing button")
-st.write("What do you want to research today?")
+
+sidebar.checkbox("Continue previous research?", value=False, key="connect")
+if state.connect:
+    collections = utility.list_collections()
+    collections = sorted([c.replace("_", " ").title() for c in collections])
+    collection_name = sidebar.selectbox("Select a collection", options=collections)
+    state["collection"] = collection_name.replace(" ", "_").lower()
+
+
 question = st.text_input(
     "What do you want to research today?",
     value="Recent discoveries made by the JWST?",
@@ -26,11 +35,11 @@ question = st.text_input(
 )
 
 if st.button("Get suggestions"):
-    state["chat_suggestions"] = get_keyword_suggestions(question)
+    state["chat_suggestions"] = get_keyword_suggestions(
+        question=question, max_results=15
+    )
 
-# The user has pressed the button to get suggestions, and the vector database
-# has not been created yet.
-if "chat_suggestions" in state and "vector_db" not in state:
+if "chat_suggestions" in state:
     st.write("### Suggested keywords:")
     st.info(
         "These keywords could be useful for searching papers in arxiv. "
@@ -43,6 +52,9 @@ if "chat_suggestions" in state and "vector_db" not in state:
         value=state["chat_suggestions"]["keywords"].split(", "),
     )
 
+# The user has pressed the button to get suggestions, and the vector database
+# has not been created yet.
+if "chat_suggestions" in state and "vector_db" not in state:
     sidebar.number_input(
         "Max number of papers to download",
         value=50,
@@ -68,6 +80,7 @@ if "vector_db" in state:
             "authors": doc.metadata["authors"],
             "published": doc.metadata["published"],
             "abstract": doc.page_content,
+            "link": doc.metadata["link"],
         }
         for doc in similar_docs
     ]
