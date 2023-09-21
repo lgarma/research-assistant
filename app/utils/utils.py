@@ -3,7 +3,7 @@ import re
 
 import arxiv
 import streamlit as st
-from app.utils.vector_database import get_vector_db
+from app.utils.vector_database import cache_documents_embeddings, connect_to_vector_db
 from langchain.schema import Document
 
 
@@ -64,19 +64,29 @@ def download_abstracts():
     The collection name is the cleaned question string.
     """
     state = st.session_state
-    with state.placeholder.status("Downloading abstracts...", expanded=False):
-        st.write("Downloading abstracts...")
-        bulk_papers = get_arxiv_abstracts(
-            query=state["chat_suggestions"]["keywords"],
-            max_results=state["max_results"],
-        )
-        st.write("Storing documents in vectorstore...")
-        st.write(state["embedding_model"])
-        vector_db = get_vector_db(
-            docs=bulk_papers,
-            collection_name=clean_string(state["question"]),
-            embedding_function=state["embedding_model"],
-        )
-        state["vector_db"] = vector_db
+    if "vector_db" not in state:
+        state["collection_name"] = clean_string(state["question"])
+        connect_to_vector_db()
 
-        st.write("Done!")
+    with state.placeholder.status("Downloading abstracts...", expanded=False):
+        download_and_upsert_documents()
+
+
+def download_and_upsert_documents():
+    """Download abstracts from arxiv and store them in a milvus collection database.
+
+    The collection name is the cleaned question string.
+    """
+    state = st.session_state
+    st.write("Downloading abstracts...")
+    bulk_papers = get_arxiv_abstracts(
+        query=state["chat_suggestions"]["keywords"],
+        max_results=state["max_results"],
+    )
+
+    bulk_papers = cache_documents_embeddings(bulk_papers)
+
+    st.write("Storing documents in vectorstore...")
+    state["vector_db"].add_documents(bulk_papers)
+
+    st.write("Done!")
