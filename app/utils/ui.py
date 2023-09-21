@@ -2,6 +2,7 @@
 
 import streamlit as st
 from langchain.chat_models import ChatOpenAI
+from langchain.embeddings import HuggingFaceEmbeddings
 from pymilvus import connections
 
 
@@ -16,8 +17,14 @@ def init_session_states():
     set_state_if_absent(
         key="chat", value=ChatOpenAI(model="gpt-3.5-turbo", temperature=0.01)
     )
-    set_state_if_absent(key="sentence_model", value="BAAI/bge-small-en")
     set_state_if_absent(key="app_state", value=None)
+    set_state_if_absent(key="rows", value=2)
+    set_state_if_absent(
+        key="embedding_model",
+        value=HuggingFaceEmbeddings(
+            model_name="BAAI/bge-small-en", encode_kwargs={"normalize_embeddings": True}
+        ),
+    )
 
 
 def start_app():

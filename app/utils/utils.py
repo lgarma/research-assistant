@@ -4,7 +4,6 @@ import re
 import arxiv
 import streamlit as st
 from app.utils.vector_database import get_vector_db
-from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.schema import Document
 
 
@@ -26,12 +25,9 @@ def get_arxiv_abstracts(
     # If the request is too big, we need to use a slower client
     if max_results > 500:
         client = arxiv.Client(page_size=500, delay_seconds=5, num_retries=7)
-        st.write("Using big slow client")
     else:
         client = arxiv.Client(page_size=100, delay_seconds=3, num_retries=3)
-        st.write("Using small fast client")
 
-    st.write(client)
     results = client.results(
         arxiv.Search(
             query=query,
@@ -75,32 +71,12 @@ def download_abstracts():
             max_results=state["max_results"],
         )
         st.write("Storing documents in vectorstore...")
+        st.write(state["embedding_model"])
         vector_db = get_vector_db(
             docs=bulk_papers,
             collection_name=clean_string(state["question"]),
-            embedding_function=HuggingFaceEmbeddings(
-                model_name=state.sentence_model,
-                encode_kwargs={"normalize_embeddings": True},
-            ),
+            embedding_function=state["embedding_model"],
         )
         state["vector_db"] = vector_db
 
         st.write("Done!")
-
-
-def display_recomended_papers(papers: list[dict], chat_suggestions: dict):
-    """Display the recommended papers."""
-    for i, paper in enumerate(chat_suggestions):
-
-        st.write(f"#### {papers[i]['title']}")
-        if paper.score >= 4:
-            st.success("Highly recommended for your research")
-        st.write(f"Authors: {papers[i]['authors']}")
-        st.write(f"Published: {papers[i]['published']}")
-        # Add arxiv link
-        st.write(f"Link: {papers[i]['link']}")
-        st.write(f"Topics: {paper.topics}")
-        st.write(f"Score: {paper.score}")
-        st.write(f"Reasoning: {paper.reasoning}")
-        with st.expander("Show Abstract"):
-            st.write(papers[i]["abstract"])
