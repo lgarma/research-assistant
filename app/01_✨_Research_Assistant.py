@@ -2,7 +2,7 @@
 
 import streamlit as st
 from app.utils.utils import download_abstracts
-from langchain.vectorstores import Milvus
+from app.utils.vector_database import connect_to_vector_db
 from pymilvus import utility
 from streamlit_tags import st_tags
 from utils.llm import LabelPapers, get_keyword_suggestions
@@ -21,15 +21,17 @@ st.sidebar.button("Reset app", on_click=reset_app)
 st.sidebar.button("Do nothing button")
 
 
-if sidebar.checkbox("Continue previous research?", value=False, key="connect"):
-    collections = utility.list_collections()
+collections = utility.list_collections()
+st.write(collections)
+if len(collections) > 0 and sidebar.checkbox(
+    "Continue previous research?", value=False
+):
     collections = sorted([c.replace("_", " ").title() for c in collections])
     collection_name = sidebar.selectbox("Select a collection", options=collections)
     collection_name = collection_name.replace(" ", "_").lower()
-    state["vector_db"] = Milvus(
-        collection_name=collection_name,
-        embedding_function=state.embedding_model,
-    )
+    state["collection_name"] = collection_name
+    connect_to_vector_db()
+
 
 question = st.text_input(
     "What do you want to research today?",
@@ -47,7 +49,7 @@ if "chat_suggestions" in state:
     st.info(
         "These keywords could be useful for searching papers in arxiv. "
         "Feel free to add or remove keywords as you see fit. "
-        "Then press the button to download some abstracts in arxiv."
+        "Press the button to download abstracts from arxiv using these keywords."
     )
     keywords = st_tags(
         label="",
@@ -55,8 +57,7 @@ if "chat_suggestions" in state:
         value=state["chat_suggestions"]["keywords"].split(", "),
     )
 
-# The user has pressed the button to get suggestions, and the vector database
-# has not been created yet.
+
 if "chat_suggestions" in state:
     cols = st.columns(2)
     cols[0].button(
