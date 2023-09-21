@@ -25,6 +25,7 @@ def init_session_states():
             model_name="BAAI/bge-small-en", encode_kwargs={"normalize_embeddings": True}
         ),
     )
+    set_state_if_absent(key="cache", value="./cache/")
 
 
 def start_app():

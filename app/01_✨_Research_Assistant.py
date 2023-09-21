@@ -22,7 +22,6 @@ st.sidebar.button("Do nothing button")
 
 
 collections = utility.list_collections()
-st.write(collections)
 if len(collections) > 0 and sidebar.checkbox(
     "Continue previous research?", value=False
 ):
