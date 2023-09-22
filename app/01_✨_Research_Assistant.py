@@ -73,7 +73,7 @@ if "chat_suggestions" in state:
     st.write("---")
 
 
-if "vector_db" in state and st.button("Get Chat suggestions"):
+if "vector_db" in state and st.checkbox("See Chat suggestions?"):
     similar_docs = state["vector_db"].similarity_search(
         query="Represent this sentence for searching relevant passages:"
         + state["question"],
@@ -95,13 +95,13 @@ if "vector_db" in state and st.button("Get Chat suggestions"):
     n_papers = 4
     for row in range(n_rows):
         # Label batch of n_papers
-        if row * n_cols % n_papers == 0 and f"row{row}" not in state:
+        if row * n_cols % n_papers == 0 and f"batch{row*n_cols//n_papers}" not in state:
             chat_labels = LabelPapers(
                 question=state["question"],
                 papers=papers[row * n_cols : row * n_cols + n_papers],
             ).get_chat_labels()
-            state[f"batch{row*n_cols/n_papers}"] = chat_labels
-        chat_labels = state[f"row{row*n_cols//n_papers}"]
+            state[f"batch{row*n_cols//n_papers}"] = chat_labels
+        chat_labels = state[f"batch{row*n_cols//n_papers}"]
 
         st.write("---")
         cols = st.columns(n_cols, gap="large")
@@ -124,3 +124,4 @@ if "vector_db" in state and st.button("Get Chat suggestions"):
     st.write("---")
     if st.button("Show more"):
         state["rows"] += 2
+        st.write(state["rows"])
