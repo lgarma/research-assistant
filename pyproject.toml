@@ -15,8 +15,8 @@ pymupdf = "1.22.5"
 streamlit-tags = "1.2.8"
 streamlit = "1.26.0"
 pymilvus = "2.3.0"
-bertopic = "0.15.0"
-langchain = "0.0.285"
+bertopic = "^0.15.0"
+langchain = "^0.0.285"
 
 [tool.poetry.group.dev.dependencies]
 black = "22.1.0"

@@ -7,5 +7,9 @@ services:
         image: network_app_server
         container_name: network_app_server
         network_mode: "host"
+        env_file:
+          - .env
+        environment:
+          - OPENAI_API_KEY=${OPENAI_API_KEY}
         expose:
             - 8602
