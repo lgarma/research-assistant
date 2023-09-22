@@ -192,10 +192,10 @@ endif
 stream:
 ifdef ip
 	@cd ${PROJECT_PATH}/app;\
-	poetry run streamlit run 01_✨_Model_App.py --server.port=8601 --server.enabl    eCORS=false --server.enableXsrfProtection=false --theme.base=dark --theme.primaryColor=#93    33ea --theme.font=monospace --theme.textColor=#f1f5f9 --server.fileWatcherType=none --brow    ser.serverAddress=${ip}
+	poetry run streamlit run 01_✨_Research_Assistant.py --server.port=8601 --server.enableCORS=false --server.enableXsrfProtection=false --theme.base=dark --theme.primaryColor=#9333ea --theme.font=monospace --theme.textColor=#f1f5f9 --server.fileWatcherType=none --browser.serverAddress=${ip}
 else
 	@cd ${PROJECT_PATH}/app;\
-	poetry run streamlit run 01_✨_Model_App.py --server.port=8601 --server.enabl    eCORS=false --server.enableXsrfProtection=false --theme.base=dark --theme.primaryColor=#93    33ea --theme.font=monospace --theme.textColor=#f1f5f9 --server.fileWatcherType=none
+	poetry run streamlit run 01_✨_Research_Assistant.py --server.port=8601 --server.enableCORS=false --server.enableXsrfProtection=false --theme.base=dark --theme.primaryColor=#9333ea --theme.font=monospace --theme.textColor=#f1f5f9 --server.fileWatcherType=none
 endif
 
 #########

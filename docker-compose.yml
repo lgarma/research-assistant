@@ -1,0 +1,11 @@
+version: '3.3'
+
+services:
+    app:
+        restart: always
+        build: .
+        image: network_app_server
+        container_name: network_app_server
+        network_mode: "host"
+        expose:
+            - 8602
