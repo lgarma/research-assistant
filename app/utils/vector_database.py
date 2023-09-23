@@ -5,6 +5,8 @@ from langchain.schema import Document
 from langchain.storage import LocalFileStore
 from langchain.vectorstores import Milvus
 
+state = st.session_state
+
 
 def connect_to_vector_db():
     """Connect to pre-existing vector database.
@@ -12,7 +14,6 @@ def connect_to_vector_db():
     Sets up a cached embedder to save the embeddings
     The cached documents can be checked for duplicated documents.
     """
-    state = st.session_state
     state["cache"] = LocalFileStore(f"./cache/{state['collection_name']}")
     state["cached_embedder"] = CacheBackedEmbeddings.from_bytes_store(
         underlying_embeddings=state["embedding_model"],
@@ -25,13 +26,28 @@ def connect_to_vector_db():
     )
 
 
+def disconnect_from_vector_db():
+    """Disconnect from the vector database."""
+    if "vector_db" in state:
+        del state["vector_db"]
+
+    if "cached_embedder" in state:
+        del state["cached_embedder"]
+
+    if "cache" in state:
+        del state["cache"]
+
+    if "collection_name" in state:
+        del state["collection_name"]
+
+
 def cache_documents_embeddings(docs: list[Document]):
     """Get the embeddings for the documents and cache them.
 
     Checks for duplicates before caching.
     Returns list of documents that were not in the database.
     """
-    state = st.session_state
+    st.write("Checking cache for duplicates...")
     new_docs = check_for_duplicates(docs)
     if len(new_docs) > 0:
         st.write(f"Encoding {len(new_docs)} new documents.")
@@ -45,9 +61,34 @@ def check_for_duplicates(docs: list[Document]):
     Extract the uuid of the documents. If the uuid is not in the database, return
     the document.
     """
-    state = st.session_state
     # encoder used by langchain
+    preexisting_keys = list(state["cache"].yield_keys())
+    st.write("preexisitng keys", preexisting_keys)
     key_encoder = _create_key_encoder(namespace=state["collection_name"])
     keys = [key_encoder(doc.page_content) for doc in docs]
-    preexisting_keys = list(state["cache"].yield_keys())
-    return [doc for doc, key in zip(docs, keys) if key not in preexisting_keys]
+    st.write("new keys", keys)
+    new_docs = []
+    for doc, key in zip(docs, keys):
+        if key not in preexisting_keys:
+            new_docs.append(doc)
+    return new_docs
+
+
+def get_all_documents() -> list[Document]:
+    """Get all documents from the vector database that is currently loaded"""
+    return state["vector_db"].similarity_search(
+        query="query",
+        k=state["vector_db"].col.num_entities,
+    )
+
+
+def display_vector_db_info():
+    """If the vector database is loaded, display relevant info."""
+    if "collection_name" in state:
+        collection_name = state["collection_name"].replace("_", " ").title()
+        st.write(f"#### Collection info \nName: {collection_name}")
+    if "vector_db" in state:
+        st.write(f"Documents: {state['vector_db'].col.num_entities}")
+        st.write(
+            f"Dimensions: {state['vector_db'].col.schema.fields[-1].params['dim']}"
+        )
