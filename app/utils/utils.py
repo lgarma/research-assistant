@@ -1,10 +1,13 @@
 """Utility functions for the app."""
 import re
+import time
 
 import arxiv
 import streamlit as st
 from app.utils.vector_database import cache_documents_embeddings, connect_to_vector_db
 from langchain.schema import Document
+
+state = st.session_state
 
 
 def clean_string(input_string: str) -> str:
@@ -26,7 +29,7 @@ def get_arxiv_abstracts(
     if max_results > 500:
         client = arxiv.Client(page_size=500, delay_seconds=5, num_retries=7)
     else:
-        client = arxiv.Client(page_size=100, delay_seconds=3, num_retries=3)
+        client = arxiv.Client(page_size=100, delay_seconds=3, num_retries=7)
 
     results = client.results(
         arxiv.Search(
@@ -63,13 +66,14 @@ def download_abstracts():
 
     The collection name is the cleaned question string.
     """
-    state = st.session_state
-    if "vector_db" not in state:
-        state["collection_name"] = clean_string(state["question"])
-        connect_to_vector_db()
-
     with state.placeholder.status("Downloading abstracts...", expanded=False):
+        if "vector_db" not in state:
+            st.write("Creating vector database...")
+            state["collection_name"] = clean_string(state["question"])
+            connect_to_vector_db()
+
         download_and_upsert_documents()
+        time.sleep(5)
 
 
 def download_and_upsert_documents():
@@ -77,16 +81,19 @@ def download_and_upsert_documents():
 
     The collection name is the cleaned question string.
     """
-    state = st.session_state
-    st.write("Downloading abstracts...")
+    st.write(f"Downloading {state['max_results']} abstracts...")
     bulk_papers = get_arxiv_abstracts(
-        query=state["chat_suggestions"]["keywords"],
+        query=", ".join(state["chat_suggestions"]),
         max_results=state["max_results"],
     )
 
+    st.write("Total documents", len(bulk_papers))
+
     bulk_papers = cache_documents_embeddings(bulk_papers)
+    st.write("Total documents after removing duplicates", len(bulk_papers))
 
     st.write("Storing documents in vectorstore...")
-    state["vector_db"].add_documents(bulk_papers)
+    _ = state["vector_db"].add_documents(bulk_papers)
+    state["vector_db"].col.flush()
 
     st.write("Done!")
