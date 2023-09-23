@@ -2,7 +2,11 @@
 
 import streamlit as st
 from app.utils.utils import download_abstracts
-from app.utils.vector_database import connect_to_vector_db
+from app.utils.vector_database import (
+    connect_to_vector_db,
+    disconnect_from_vector_db,
+    display_vector_db_info,
+)
 from pymilvus import utility
 from streamlit_tags import st_tags
 from utils.llm import LabelPapers, get_keyword_suggestions
@@ -23,7 +27,7 @@ st.sidebar.button("Do nothing button")
 
 collections = utility.list_collections()
 if len(collections) > 0 and sidebar.checkbox(
-    "Continue previous research?", value=False
+    "Continue previous research?", value=False, on_change=disconnect_from_vector_db
 ):
     collections = sorted([c.replace("_", " ").title() for c in collections])
     collection_name = sidebar.selectbox("Select a collection", options=collections)
@@ -36,12 +40,12 @@ question = st.text_input(
     "What do you want to research today?",
     value="Recent discoveries made by the JWST?",
     key="question",
+    on_change=disconnect_from_vector_db,
 )
 
 if st.button("Get keyword suggestions"):
-    state["chat_suggestions"] = get_keyword_suggestions(
-        question=question, max_results=15
-    )
+    chat_suggestions = get_keyword_suggestions(question=question, max_results=15)
+    state["chat_suggestions"] = chat_suggestions["keywords"].split(", ")[:10]
 
 if "chat_suggestions" in state:
     st.write("### Suggested keywords:")
@@ -51,17 +55,15 @@ if "chat_suggestions" in state:
         "Press the button to download abstracts from arxiv using these keywords."
     )
     keywords = st_tags(
-        label="",
-        text="Press enter to add more",
-        value=state["chat_suggestions"]["keywords"].split(", "),
+        label="", text="Press enter to add more", value=state["chat_suggestions"]
     )
 
 
 if "chat_suggestions" in state:
     cols = st.columns(2)
-    cols[0].button(
-        "Search keywords in Arxiv", key="search_arxiv", on_click=download_abstracts
-    )
+    if cols[0].button("Search abstracts in Arxiv", key="search_arxiv"):
+        download_abstracts()
+
     cols[1].number_input(
         "Max number of papers to download",
         value=100,
@@ -72,8 +74,8 @@ if "chat_suggestions" in state:
     state["placeholder"] = st.empty()
     st.write("---")
 
-
-if "vector_db" in state and st.checkbox("See Chat suggestions?"):
+display_vector_db_info()
+if "vector_db" in state and st.checkbox("See papers suggestions?"):
     similar_docs = state["vector_db"].similarity_search(
         query="Represent this sentence for searching relevant passages:"
         + state["question"],
