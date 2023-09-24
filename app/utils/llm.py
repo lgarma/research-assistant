@@ -1,7 +1,8 @@
 """Utility functions for the app."""
-
-import streamlit as st
+from app.utils.prompts import first_keywords_prompt, refine_keywords_prompt
 from app.utils.utils import get_arxiv_abstracts
+from langchain.chat_models import ChatOpenAI
+from langchain.llms import OpenAI
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
 from langchain.output_parsers.pydantic import PydanticOutputParser
 from langchain.prompts import (
@@ -9,120 +10,76 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
-from langchain.prompts.chat import AIMessage
+from langchain.prompts.chat import BaseMessage
 from pydantic import BaseModel, Field
 
+instruct = OpenAI(
+    model="gpt-3.5-turbo-instruct",
+    temperature=0.01,
+)
 
-def get_response_schema_for_keywords():
-    """Get response schema for keywords."""
-    return [
-        ResponseSchema(
-            name="keywords",
-            description="Short list relevant keywords that could be useful "
-            "for the user research. Separate the keywords with commas. "
-            "Be specific."
-            "These keywords will be used to search for papers in arxiv. ",
-        ),
-    ]
+chat = ChatOpenAI(
+    model="gpt-3.5-turbo",
+    temperature=0.01,
+)
 
 
-def get_chat_keyword_suggestions(question: str) -> dict:
-    """Initial prompt of the app. Ask the user what they want to research.
+class KeywordsAgent:
+    """Agent that generates relevant keywords.
 
-    Return dictionary with arxiv categories, keywords, similar questions and
-    sorting criteria.
-    """
-    response_schemas = get_response_schema_for_keywords()
-    output_parser = StructuredOutputParser.from_response_schemas(response_schemas)
-    format_instructions = output_parser.get_format_instructions()
-
-    prompt = ChatPromptTemplate(
-        messages=[
-            SystemMessagePromptTemplate.from_template(
-                "Help the user with their research as best as possible. "
-                "\n{format_instructions}"
-            ),
-            HumanMessagePromptTemplate.from_template("I want to research: {question}"),
-        ],
-        input_variables=["question"],
-        partial_variables={"format_instructions": format_instructions},
-    )
-
-    _input = prompt.format_prompt(question=question)
-    output = st.session_state.chat(_input.to_messages())
-    return output_parser.parse(output.content)
-
-
-def refine_keywords(question: str, keywords: list[str], papers: list[str]) -> dict:
-    """Refine the keywords using the papers titles
-
-    Ask Chat to refine the keywords if necessary.
-    """
-    response_schemas = get_response_schema_for_keywords()
-    output_parser = StructuredOutputParser.from_response_schemas(response_schemas)
-    format_instructions = output_parser.get_format_instructions()
-
-    prompt = ChatPromptTemplate(
-        messages=[
-            SystemMessagePromptTemplate.from_template(
-                "Help the user with their research as best as possible. "
-                "\n{format_instructions}"
-            ),
-            HumanMessagePromptTemplate.from_template(
-                "I want to research: {question}. \n\n"
-                "The following are some titles that were downloaded from arxiv using "
-                "these keywords: {keywords}. "
-                "Papers: {papers}."
-                "Give me a new list of keywords that best describe the general topics"
-                "of these papers."
-            ),
-        ],
-        input_variables=["question", "keywords", "papers"],
-        partial_variables={"format_instructions": format_instructions},
-    )
-
-    _input = prompt.format_prompt(question=question, keywords=keywords, papers=papers)
-    output = st.session_state.chat(_input.to_messages())
-    return output_parser.parse(output.content)
-
-
-def get_keyword_suggestions(question: str, max_results: int = 10):
-    """Get keyword suggestions from Chat.
-
-    Uses chat to generate a list of keywords that could be useful for the user research.
-    Then downloads the top max_results papers from arxiv using these keywords
-    Finally, asks Chat to refine the list of keywords, by looking at the top max results
-    papers.
-
-    Returns a dictionary with the keywords, categories and related questions.
+    The agent uses gpt-3.5-turbo-instruct to generate a list of keywords that
+    could be useful for the user research.
+    These first keyword suggestions usually are not very specific and usually
+    lack domain knowledge.
+    To refine the suggestions the agent downloads a small sample of papers
+    from arxiv using the provided keywords.
+    The titles of these papers are fed back to the llm, this time with instructions
+    to refine the keywords list.
+    The agent returns a list of both the first keyword suggestions
+    and the refined keywords.
 
     Parameters:
         question (str):
             The question that the user wants to research.
-
-        max_results (int):
-            The number of papers to download from arxiv. Try no more than 20.
     """
-    first_suggestion = get_chat_keyword_suggestions(question=question)
 
-    top_papers = get_arxiv_abstracts(
-        query=first_suggestion["keywords"],
-        max_results=max_results,
-        sort_by="Relevance",
-    )
+    def __init__(self, question: str, n_exploratory_papers: int = 30):
+        """Initialize the agent."""
+        self.question = question
+        self.n_exploratory_papers = n_exploratory_papers
 
-    top_papers = [paper.metadata["title"] for paper in top_papers]
+    def _first_keyword_suggestion(self) -> str:
+        """Get the first keyword suggestion from instruct gpt."""
+        prompt = first_keywords_prompt(self.question)
+        return instruct(prompt)[:-1]
 
-    refined_suggestions = refine_keywords(
-        question=question, keywords=first_suggestion["keywords"], papers=top_papers
-    )
+    def _refine_keywords(self, papers: list[str]) -> str:
+        """Ask gpt instruct to refine the keywords using the papers titles."""
+        prompt = refine_keywords_prompt(self.question, papers)
+        return instruct(prompt)[:-1]
 
-    st.session_state["first_suggestion"] = first_suggestion["keywords"]
-    return refined_suggestions
+    def __call__(self) -> tuple[list[str], list[str]]:
+        """Get keyword suggestions from instruct"""
+        first_keywords = self._first_keyword_suggestion()
+
+        top_papers = get_arxiv_abstracts(
+            query=first_keywords,
+            max_results=self.n_exploratory_papers,
+            sort_by="Relevance",
+        )
+        titles = [paper.metadata["title"] for paper in top_papers]
+
+        refined_keywords = self._refine_keywords(papers=titles)
+        return first_keywords.split(", "), refined_keywords.split(", ")
 
 
-class LabelPapers:
-    """Label tha papers using an LLM"""
+class ScorePapersAgent:
+    """Label tha papers using chat llm.
+
+    The agent uses gpt-3.5-turbo to score the relevance of the papers.
+    The output should is a list of pydantic objects with the following schema:
+    title, topics, score and reasoning for the score.
+    """
 
     def __init__(self, question: str, papers: list[dict]):
         """Initialize the LabelChat."""
@@ -171,8 +128,7 @@ class LabelPapers:
 
         format_instructions += (
             "\n\nIf the user provides multiple papers, "
-            "use a separate the markdown snippets using a divider "
-            "'---' "
+            "use a separate the markdown snippets using a divider '---' "
         )
         return format_instructions
 
@@ -204,10 +160,10 @@ class LabelPapers:
             papers=self.papers,
         )
 
-        output = st.session_state.chat(_input.to_messages())
+        output = chat(_input.to_messages())
         return self.parse_output(output)
 
-    def parse_output(self, output: AIMessage) -> list[dict]:
+    def parse_output(self, output: BaseMessage) -> list[dict]:
         """Use output parser to parse the output"""
         pydantic_parser = self.get_parser()
         split = output.content.split("---")
