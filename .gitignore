@@ -148,6 +148,9 @@ notebooks/
 # Embeddings cache
 cache/
 
+# LLMs calls cache
+.app.db
+
 # Images
 *.png
 *.jpg
