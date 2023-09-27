@@ -1,7 +1,8 @@
 """Topic model utilities."""
-import os
+import datetime
 
 import numpy as np
+import pandas as pd
 import streamlit as st
 from app.utils.vector_database import get_all_documents
 from bertopic import BERTopic
@@ -62,7 +63,7 @@ class TopicModel:
             }
         if hdbscan_params is None:
             hdbscan_params = {
-                "min_cluster_size": 10,
+                "min_cluster_size": 12,
                 "metric": "euclidean",
                 "cluster_selection_method": "eom",
                 "prediction_data": True,
@@ -80,28 +81,17 @@ class TopicModel:
         hdbscan = HDBSCAN(**hdbscan_params)
         representation = OpenAI(**representation_params)
 
-        if os.path.exists(f"./cache/{state['collection_name']}/topic_model_docs"):
-            st.write("Loading pre-existing topic model...")
-            self.topic_model = BERTopic.load(
-                path=f"./cache/{state['collection_name']}/topic_model_docs",
-                embedding_model=state["embedding_model"].model_name,
-            )
-            self.model_fitted = True
-        else:
-            st.write("Creating new topic model...")
-            self.topic_model = BERTopic(
-                embedding_model=state["embedding_model"].model_name,
-                umap_model=umap,
-                hdbscan_model=hdbscan,
-                representation_model=representation,
-                # Hyperparameters
-                calculate_probabilities=False,
-                top_n_words=10,
-                n_gram_range=(1, 2),
-                verbose=True,
-            )
-            self.model_fitted = False
-
+        self.topic_model = BERTopic(
+            embedding_model=state["embedding_model"].model_name,
+            umap_model=umap,
+            hdbscan_model=hdbscan,
+            representation_model=representation,
+            # Hyperparameters
+            calculate_probabilities=False,
+            top_n_words=10,
+            n_gram_range=(1, 2),
+            verbose=True,
+        )
         self.documents = get_all_documents()
         self.embeddings = np.array(
             state["cached_embedder"].embed_documents(
@@ -111,9 +101,7 @@ class TopicModel:
 
     def fit_model(self):
         """Fit a topic model to a set of documents and embeddings."""
-        if self.model_fitted:
-            st.write("Model already fitted.")
-            return
+        self.__init__()
         contents = [doc.page_content for doc in self.documents]
         self.topic_model.fit(
             documents=contents,
@@ -132,7 +120,14 @@ class TopicModel:
 
     def visualize_documents(self) -> Figure:
         """Visualize the documents."""
-        titles = [doc.metadata["title"] for doc in self.documents]
+        titles = [
+            (
+                f"{doc.metadata['title']}<br>"
+                f"{doc.metadata['authors']}<br>"
+                f"{doc.metadata['published']}"
+            )
+            for doc in self.documents
+        ]
         reduced_embeddings = UMAP(
             n_neighbors=15,
             n_components=2,
@@ -141,8 +136,60 @@ class TopicModel:
             random_state=42,
         ).fit_transform(self.embeddings)
 
+        # self.get_custom_labels()
         return self.topic_model.visualize_documents(
             docs=titles,
-            embeddings=reduced_embeddings,
-            title=state["collection_name"],
+            reduced_embeddings=reduced_embeddings,
+            title=f'<b> {state["nice_collection_name"]} </b>',
+            custom_labels=False,
+            hide_annotations=False,
         )
+
+    def get_custom_labels(self):
+        """Get custom labels for the topics for simplified visualization."""
+
+        def get_first_words(s: str, n: int):
+            """Get the first n words of a string."""
+            words = s.split(" ")
+            return " ".join(words[:n])
+
+        topics = self.topic_model.get_topics()
+
+        custom_labels = [
+            f"{get_first_words(topics[topic][0][0], 4)} ..." for topic in topics
+        ]
+        self.topic_model.set_topic_labels(custom_labels)
+
+    def load_model(self):
+        """Load a pre-existing topic model."""
+        self.topic_model = BERTopic.load(
+            path=f"./cache/{state['collection_name']}/topic_model_docs",
+            embedding_model=state["embedding_model"].model_name,
+        )
+
+    def visualize_over_time(self):
+        """Visualize the topics over time."""
+        timestamps = [
+            datetime.datetime(doc.metadata["published"], 1, 1) for doc in self.documents
+        ]
+        contents = [doc.metadata["title"] for doc in self.documents]
+        topics_over_time = self.topic_model.topics_over_time(
+            contents,
+            timestamps,
+        )
+        return self.topic_model.visualize_topics_over_time(
+            topics_over_time,
+            top_n_topics=10,
+        )
+
+    def topics_info(self) -> pd.DataFrame:
+        """Get a dataframe with the topics and their metadata."""
+        topic_info = self.topic_model.get_topic_info()
+        df = topic_info[["Count", "Representation"]]
+
+        def convert_to_string(lst):
+            """Convert a list to a string."""
+            return " ".join(lst)
+
+        df["Representation"] = df["Representation"].apply(convert_to_string)
+        return df.iloc[range(1, len(df))]
