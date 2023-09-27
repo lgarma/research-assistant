@@ -22,22 +22,26 @@ if st.checkbox("Create topic model for this collection"):
     if os.path.exists(f"./cache/{state['collection_name']}/topic_model_docs"):
         st.write("Loading topic model from cache...")
         topic_model.load_model()
+        state["topic_model_fitted"] = True
 
     if st.button("Fit topic model"):
         topic_model.fit_model()
+        state["topic_model_fitted"] = True
 
-    topics = topic_model.topic_model.get_topics()
-    st.write("### Topics")
-    st.write("The following topics were found in the collection:")
+    if state["topic_model_fitted"]:
 
-    st.dataframe(topic_model.topics_info())
+        topics = topic_model.topic_model.get_topics()
+        st.write("### Topics")
+        st.write("The following topics were found in the collection:")
 
-    if st.checkbox("Show documents visualization"):
-        document_viz = topic_model.visualize_documents()
-        if st.checkbox("Hide legends", value=True):
-            document_viz.update_layout(showlegend=False)
-        st.plotly_chart(document_viz, use_container_width=True)
+        st.dataframe(topic_model.topics_info())
 
-    if st.checkbox("Show topics over time"):
-        topics_over_time_viz = topic_model.visualize_over_time()
-        st.plotly_chart(topics_over_time_viz, use_container_width=True)
+        if st.checkbox("Show documents visualization"):
+            document_viz = topic_model.visualize_documents()
+            if st.checkbox("Hide legends", value=True):
+                document_viz.update_layout(showlegend=False)
+            st.plotly_chart(document_viz, use_container_width=True)
+
+        if st.checkbox("Show topics over time"):
+            topics_over_time_viz = topic_model.visualize_over_time()
+            st.plotly_chart(topics_over_time_viz, use_container_width=True)

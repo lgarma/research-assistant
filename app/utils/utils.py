@@ -1,6 +1,5 @@
 """Utility functions for the app."""
 import re
-import time
 
 import arxiv
 import streamlit as st
@@ -73,7 +72,6 @@ def download_abstracts():
             connect_to_vector_db()
 
         download_and_upsert_documents()
-        time.sleep(5)
 
 
 def download_and_upsert_documents():
@@ -81,10 +79,10 @@ def download_and_upsert_documents():
 
     The collection name is the cleaned question string.
     """
-    st.write(f"Downloading {state['max_results']} abstracts...")
+    st.write(f"Downloading {state['max_papers']} abstracts...")
     bulk_papers = get_arxiv_abstracts(
-        query=", ".join(state["chat_suggestions"]),
-        max_results=state["max_results"],
+        query=", ".join(state["refined_keywords"][:10]),
+        max_results=state["max_papers"],
     )
 
     st.write("Total documents", len(bulk_papers))

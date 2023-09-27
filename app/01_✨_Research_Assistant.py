@@ -71,6 +71,7 @@ if "refined_keywords" in state:
         value=100,
         min_value=10,
         max_value=2000,
+        # on_change=st.experimental_rerun(),
     )
     state["placeholder"] = st.empty()
     st.write("---")

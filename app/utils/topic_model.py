@@ -54,7 +54,7 @@ class TopicModel:
         """
         if umap_params is None:
             umap_params = {
-                "n_neighbors": 15,
+                "n_neighbors": 10,
                 "n_components": 5,
                 "min_dist": 0.0,
                 "metric": "cosine",
@@ -63,7 +63,7 @@ class TopicModel:
             }
         if hdbscan_params is None:
             hdbscan_params = {
-                "min_cluster_size": 12,
+                "min_cluster_size": 8,
                 "metric": "euclidean",
                 "cluster_selection_method": "eom",
                 "prediction_data": True,
