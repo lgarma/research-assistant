@@ -178,3 +178,14 @@ poetry.lock
 
 # C
 *.c
+
+# Makefile
+Makefile
+
+# Files from the build of Apervox
+mkdocs.yml
+docs/
+profiling/
+tests/
+researchResearch-assistant/
+build.py
