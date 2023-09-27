@@ -2,6 +2,7 @@
 
 import langchain
 import streamlit as st
+from app.utils.vector_database import connect_to_vector_db
 from langchain.cache import SQLiteCache
 from langchain.embeddings import HuggingFaceEmbeddings
 from pymilvus import connections
@@ -43,3 +44,17 @@ def reset_app():
     for key in state:
         del state[key]
     init_session_states()
+
+
+def choose_collection(collections: list[str], use_sidebar=True):
+    """Choose a collection from a list of collections."""
+    collections = sorted([c.replace("_", " ").title() for c in collections])
+    if use_sidebar:
+        collection_name = st.sidebar.selectbox(
+            "Select a collection", options=collections
+        )
+    else:
+        collection_name = st.selectbox("Select a collection", options=collections)
+    collection_name = collection_name.replace(" ", "_").lower()
+    state["collection_name"] = collection_name
+    connect_to_vector_db()

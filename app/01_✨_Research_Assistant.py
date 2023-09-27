@@ -3,15 +3,11 @@ import random
 
 import streamlit as st
 from app.utils.utils import download_abstracts
-from app.utils.vector_database import (
-    connect_to_vector_db,
-    disconnect_from_vector_db,
-    display_vector_db_info,
-)
+from app.utils.vector_database import disconnect_from_vector_db, display_vector_db_info
 from pymilvus import utility
 from streamlit_tags import st_tags
 from utils.llm import KeywordsAgent, ScorePapersAgent
-from utils.ui import init_session_states, reset_app, start_app
+from utils.ui import choose_collection, init_session_states, reset_app, start_app
 
 init_session_states()
 state = st.session_state
@@ -30,11 +26,7 @@ collections = utility.list_collections()
 if len(collections) > 0 and sidebar.checkbox(
     "Continue previous research?", value=False, on_change=disconnect_from_vector_db
 ):
-    collections = sorted([c.replace("_", " ").title() for c in collections])
-    collection_name = sidebar.selectbox("Select a collection", options=collections)
-    collection_name = collection_name.replace(" ", "_").lower()
-    state["collection_name"] = collection_name
-    connect_to_vector_db()
+    choose_collection(collections=collections)
 
 
 question = st.text_input(
