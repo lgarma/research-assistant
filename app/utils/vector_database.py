@@ -40,6 +40,10 @@ def disconnect_from_vector_db():
     if "collection_name" in state:
         del state["collection_name"]
 
+    for key in state:
+        if key.startswith("batch"):
+            del state[key]
+
 
 def cache_documents_embeddings(docs: list[Document]):
     """Get the embeddings for the documents and cache them.
@@ -63,15 +67,9 @@ def check_for_duplicates(docs: list[Document]):
     """
     # encoder used by langchain
     preexisting_keys = list(state["cache"].yield_keys())
-    st.write("preexisitng keys", preexisting_keys)
     key_encoder = _create_key_encoder(namespace=state["collection_name"])
     keys = [key_encoder(doc.page_content) for doc in docs]
-    st.write("new keys", keys)
-    new_docs = []
-    for doc, key in zip(docs, keys):
-        if key not in preexisting_keys:
-            new_docs.append(doc)
-    return new_docs
+    return [doc for doc, key in zip(docs, keys) if key not in preexisting_keys]
 
 
 def get_all_documents() -> list[Document]:
@@ -85,10 +83,9 @@ def get_all_documents() -> list[Document]:
 def display_vector_db_info():
     """If the vector database is loaded, display relevant info."""
     if "collection_name" in state:
-        collection_name = state["collection_name"].replace("_", " ").title()
-        st.write(f"#### Collection info \nName: {collection_name}")
+        state["nice_collection_name"] = (
+            state["collection_name"].replace("_", " ").title()
+        )
+        st.write(f"#### Collection info \nName: {state['nice_collection_name']}")
     if "vector_db" in state:
         st.write(f"Documents: {state['vector_db'].col.num_entities}")
-        st.write(
-            f"Dimensions: {state['vector_db'].col.schema.fields[-1].params['dim']}"
-        )
