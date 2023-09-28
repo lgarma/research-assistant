@@ -88,6 +88,7 @@ def download_and_upsert_documents():
     st.write("Total documents", len(bulk_papers))
 
     bulk_papers = cache_documents_embeddings(bulk_papers)
+    state["total_new_documents"] = len(bulk_papers)
     st.write("Total documents after removing duplicates", len(bulk_papers))
 
     st.write("Storing documents in vectorstore...")
