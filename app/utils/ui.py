@@ -1,11 +1,12 @@
 """UI utilities for the app."""
 
-import langchain
 import streamlit as st
 from app.utils.vector_database import connect_to_vector_db
-from langchain.cache import SQLiteCache
 from langchain.embeddings import HuggingFaceEmbeddings
 from pymilvus import connections
+
+# import langchain
+# from langchain.cache import SQLiteCache
 
 state = st.session_state
 
@@ -33,7 +34,7 @@ def start_app():
 
     Connect to Milvus and initialize the llm cache.
     """
-    langchain.llm_cache = SQLiteCache(database_path=".app.db")
+    # langchain.llm_cache = SQLiteCache(database_path=".app.db")
     milvus_connection = {"alias": "default", "host": "localhost", "port": 19530}
     connections.connect(**milvus_connection)
     state.app_state = "initialized"
