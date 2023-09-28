@@ -118,7 +118,7 @@ class TopicModel:
             save_embedding_model=state["embedding_model"].model_name,
         )
 
-    def visualize_documents(self) -> Figure:
+    def visualize_documents(self, hide_annotations=False) -> Figure:
         """Visualize the documents."""
         titles = [
             (
@@ -136,13 +136,13 @@ class TopicModel:
             random_state=42,
         ).fit_transform(self.embeddings)
 
-        # self.get_custom_labels()
+        self.get_custom_labels()
         return self.topic_model.visualize_documents(
             docs=titles,
             reduced_embeddings=reduced_embeddings,
             title=f'<b> {state["nice_collection_name"]} </b>',
-            custom_labels=False,
-            hide_annotations=False,
+            custom_labels=True,
+            hide_annotations=hide_annotations,
         )
 
     def get_custom_labels(self):
