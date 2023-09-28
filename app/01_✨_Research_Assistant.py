@@ -1,12 +1,13 @@
 """App main page."""
+import random
 
 import streamlit as st
 from app.utils.utils import download_abstracts
-from app.utils.vector_database import connect_to_vector_db
+from app.utils.vector_database import disconnect_from_vector_db, display_vector_db_info
 from pymilvus import utility
 from streamlit_tags import st_tags
-from utils.llm import LabelPapers, get_keyword_suggestions
-from utils.ui import init_session_states, reset_app, start_app
+from utils.llm import KeywordsAgent, ScorePapersAgent
+from utils.ui import choose_collection, init_session_states, reset_app, start_app
 
 init_session_states()
 state = st.session_state
@@ -23,57 +24,60 @@ st.sidebar.button("Do nothing button")
 
 collections = utility.list_collections()
 if len(collections) > 0 and sidebar.checkbox(
-    "Continue previous research?", value=False
+    "Continue previous research?", value=False, on_change=disconnect_from_vector_db
 ):
-    collections = sorted([c.replace("_", " ").title() for c in collections])
-    collection_name = sidebar.selectbox("Select a collection", options=collections)
-    collection_name = collection_name.replace(" ", "_").lower()
-    state["collection_name"] = collection_name
-    connect_to_vector_db()
+    choose_collection(collections=collections)
 
 
 question = st.text_input(
     "What do you want to research today?",
     value="Recent discoveries made by the JWST?",
     key="question",
+    on_change=disconnect_from_vector_db,
 )
 
-if st.button("Get keyword suggestions"):
-    state["chat_suggestions"] = get_keyword_suggestions(
-        question=question, max_results=15
-    )
+if st.button("Generate keyword suggestions"):
+    state["first_keywords"], state["refined_keywords"] = KeywordsAgent(
+        question=question,
+        n_exploratory_papers=30,
+    )()
 
-if "chat_suggestions" in state:
-    st.write("### Suggested keywords:")
+more_keywords = st.empty()
+
+if "refined_keywords" in state:
     st.info(
-        "These keywords could be useful for searching papers in arxiv. "
-        "Feel free to add or remove keywords as you see fit. "
-        "Press the button to download abstracts from arxiv using these keywords."
+        "These keywords could be useful for your research. "
+        "Add or remove them as you see fit. "
+        "If you want to generate a new set of keywords, "
+        "use the button below."
     )
     keywords = st_tags(
         label="",
         text="Press enter to add more",
-        value=state["chat_suggestions"]["keywords"].split(", "),
+        value=state["refined_keywords"][:10],
     )
 
-
-if "chat_suggestions" in state:
+if "refined_keywords" in state:
     cols = st.columns(2)
-    cols[0].button(
-        "Search keywords in Arxiv", key="search_arxiv", on_click=download_abstracts
-    )
-    cols[1].number_input(
+    if cols[0].button("Generate new keywords", key="new_keywords"):
+        random.shuffle(state["refined_keywords"])
+        st.experimental_rerun()
+
+    if cols[0].button("Search abstracts in Arxiv with these keywords"):
+        download_abstracts()
+
+    state["max_papers"] = cols[1].number_input(
         "Max number of papers to download",
         value=100,
         min_value=10,
         max_value=2000,
-        key="max_results",
+        # on_change=st.experimental_rerun(),
     )
     state["placeholder"] = st.empty()
     st.write("---")
 
-
-if "vector_db" in state and st.checkbox("See Chat suggestions?"):
+display_vector_db_info()
+if "vector_db" in state and st.checkbox("Generate papers recommendations?"):
     similar_docs = state["vector_db"].similarity_search(
         query="Represent this sentence for searching relevant passages:"
         + state["question"],
@@ -96,7 +100,7 @@ if "vector_db" in state and st.checkbox("See Chat suggestions?"):
     for row in range(n_rows):
         # Label batch of n_papers
         if row * n_cols % n_papers == 0 and f"batch{row*n_cols//n_papers}" not in state:
-            chat_labels = LabelPapers(
+            chat_labels = ScorePapersAgent(
                 question=state["question"],
                 papers=papers[row * n_cols : row * n_cols + n_papers],
             ).get_chat_labels()
@@ -122,6 +126,6 @@ if "vector_db" in state and st.checkbox("See Chat suggestions?"):
                     st.write(papers[i]["abstract"])
 
     st.write("---")
-    if st.button("Show more"):
+    if st.button("Generate more recommendations"):
         state["rows"] += 2
-        st.write(state["rows"])
+        st.experimental_rerun()

@@ -148,6 +148,9 @@ notebooks/
 # Embeddings cache
 cache/
 
+# LLMs calls cache
+.app.db
+
 # Images
 *.png
 *.jpg
@@ -175,3 +178,14 @@ poetry.lock
 
 # C
 *.c
+
+# Makefile
+Makefile
+
+# Files from the build of Apervox
+mkdocs.yml
+docs/
+profiling/
+tests/
+researchResearch-assistant/
+build.py
