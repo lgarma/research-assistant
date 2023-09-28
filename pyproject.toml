@@ -3,7 +3,7 @@ name = "researchResearch-assistant"
 version = "0.1.0"
 description = "Use llm to help you in your research - Module Research-assistant"
 authors = ["Luis garma <garmahds@gmail.com>"]
-packages = [{include="researchResearch-assistant"}]
+packages = [{include="app"}]
 
 [tool.poetry.dependencies]
 python =  ">=3.8.1,<3.9.7 || >3.9.7,<3.11"
@@ -14,9 +14,22 @@ arxiv = "1.4.8"
 pymupdf = "1.22.5"
 streamlit-tags = "1.2.8"
 pymilvus = "2.3.0"
-bertopic = "^0.15.0"
-langchain = "^0.0.285"
-streamlit = "^1.27.0"
+bertopic = "0.15.0"
+langchain = "0.0.285"
+streamlit = "1.27.0"
+torch = "2.0.0"
+nvidia-cublas-cu11 = "11.10.3.66"
+nvidia-cuda-cupti-cu11 = "11.7.101"
+nvidia-cuda-nvrtc-cu11 = "11.7.99"
+nvidia-cuda-runtime-cu11 = "11.7.99"
+nvidia-cudnn-cu11 = "8.5.0.96"
+nvidia-cufft-cu11 = "10.9.0.58"
+nvidia-curand-cu11 = "10.2.10.91"
+nvidia-cusolver-cu11 = "11.4.0.1"
+nvidia-cusparse-cu11 = "11.7.4.91"
+nvidia-nccl-cu11 = "2.14.3"
+nvidia-nvtx-cu11 = "11.7.91"
+
 
 [tool.poetry.group.dev.dependencies]
 black = "22.1.0"
@@ -57,7 +70,6 @@ multi_line_output = 3
 include_trailing_comma = true
 default_section = "THIRDPARTY"
 known_third_party = []
-known_first_party = ["researchResearch-assistant"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

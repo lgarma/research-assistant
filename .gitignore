@@ -189,3 +189,6 @@ profiling/
 tests/
 researchResearch-assistant/
 build.py
+
+# Docker
+volumes/
