@@ -78,14 +78,3 @@ def get_all_documents() -> list[Document]:
         query="query",
         k=state["vector_db"].col.num_entities,
     )
-
-
-def display_vector_db_info():
-    """If the vector database is loaded, display relevant info."""
-    if "collection_name" in state:
-        state["nice_collection_name"] = (
-            state["collection_name"].replace("_", " ").title()
-        )
-        st.write(f"#### Collection info \nName: {state['nice_collection_name']}")
-    if "vector_db" in state:
-        st.write(f"Documents: {state['vector_db'].col.num_entities}")

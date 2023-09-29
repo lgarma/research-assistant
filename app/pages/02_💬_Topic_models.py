@@ -3,13 +3,24 @@ import os
 
 import streamlit as st
 from app.utils.topic_model import TopicModel
-from app.utils.ui import choose_collection
-from app.utils.vector_database import display_vector_db_info
+from app.utils.ui import (
+    choose_collection,
+    display_vector_db_info,
+    init_session_states,
+    start_app,
+)
 from pymilvus import utility
 
+init_session_states()
 state = st.session_state
+sidebar = st.sidebar
+
+sidebar.button("Do nothing button")
+if state.app_state is None:
+    start_app()
+
 st.title("Topic models")
-st.sidebar.button("Do nothing button")
+# sidebar.button("Do nothing button")
 
 collections = utility.list_collections()
 choose_collection(collections=collections, use_sidebar=False)
@@ -37,9 +48,14 @@ if st.checkbox("Create topic model for this collection"):
         st.dataframe(topic_model.topics_info())
 
         if st.checkbox("Show documents visualization"):
-            document_viz = topic_model.visualize_documents()
             if st.checkbox("Hide legends", value=True):
+                document_viz = topic_model.visualize_documents()
                 document_viz.update_layout(showlegend=False)
+            else:
+                document_viz = topic_model.visualize_documents(hide_annotations=True)
+                for i, annotation in enumerate(document_viz.layout.annotations):
+                    if i % 2 == 0:
+                        annotation.text = ""
             st.plotly_chart(document_viz, use_container_width=True)
 
         if st.checkbox("Show topics over time"):

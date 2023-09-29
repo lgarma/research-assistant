@@ -50,12 +50,21 @@ def reset_app():
 def choose_collection(collections: list[str], use_sidebar=True):
     """Choose a collection from a list of collections."""
     collections = sorted([c.replace("_", " ").title() for c in collections])
-    if use_sidebar:
-        collection_name = st.sidebar.selectbox(
-            "Select a collection", options=collections
-        )
-    else:
-        collection_name = st.selectbox("Select a collection", options=collections)
+    collection_name = st.selectbox("Select a research", options=collections)
     collection_name = collection_name.replace(" ", "_").lower()
     state["collection_name"] = collection_name
     connect_to_vector_db()
+
+
+def display_vector_db_info():
+    """If the vector database is loaded, display relevant info."""
+    if "collection_name" in state:
+        state["nice_collection_name"] = (
+            state["collection_name"].replace("_", " ").title()
+        )
+    if "vector_db" in state:
+        st.write(
+            f"Total abstracts: {state['vector_db'].col.num_entities} \n\n"
+            "Embedding Dimensions: "
+            f"{state['vector_db'].col.schema.fields[-1].params['dim']} \n\n"
+        )
