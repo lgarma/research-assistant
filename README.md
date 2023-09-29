@@ -1,46 +1,89 @@
-# Research-Research-assistant
+# Research Assistant 🧠
 
-## Manager
+**Use a LLM assistants to become familiar with the research landscape.
+Create a knowledge database, explore topics, identify relevant papers, and new trends.**
 
-- Manager [<name@lytica.ai>]
 
-## Model requirements
-- [ ] MkDocs
-  - [ ] Home
-  - [ ] Design document
-  - [ ] Examples
-  - [ ] Profiler
-  - [ ] API Reference
-- [ ] Tests
-  - [ ] Unit tests
-  - [ ] Matrix of tests
-- [ ] Quality Assurance
-  - [ ] Code quality
-  - [ ] Code style
-- [ ] Profiling
-  - [ ] Execution time
-  - [ ] Memory usage
-- [ ] CI/CD
-  - [ ] GitHub Actions Jenkins
-  - [ ] Jenkins Actions Code Quality
-- [ ] Research notebooks
-- [ ] ~~Docker Environment~~
-  - [ ] ~~Dockerfile~~
-  - [ ] ~~Docker Compose~~
-- [ ] ~~License~~
+---
 
-## Install
+## 📖 Overview
 
-With **Pip**
-```bash
-pip install git+ssh://git@github.com/LyticaMx/research-Research-assistant
+Research Assistant uses different LLMs agents to assist researchers in various
+aspects of their work.
+
+- **Keyword Generation**: Generate highly relevant keywords for your research topic.
+This agent, works in two steps. First, an LLM assistant is prompted to generates a
+small list of relevant keywords, using its own internal parameters. Usually, this
+first list is good, but not very specific and lacks domain-specific terms.
+To refine the list, a small sample of titles from arxiv is fed back to the agent,
+which uses them to generate a new list of keywords that is more tailored to your research.
+- **Knowledge database**: Download papers from arxiv using the refined list of keywords.
+The abstracts are vectorized using **bge-small-en-v1.5** and saved in a **Milvus**
+vector database.
+- **Topic Identification**: Use BERTopic to identify the main topics in the knowledge database.
+Get a description in natural language of each topic and the get some representative papers.
+Use the topic model to identify research topics, outliers, and recent trends.
+- **Paper Scoring**: Explore the knowledge database using Retrival Augmented Generation (RAG).
+Ask questions and identify which papers are a **must-read**.
+
+---
+
+## Getting Started
+
+Make sure you have one of the following installed:
+
+- Poetry
+- Docker and Docker Compose
+
+### Cloning the Repository
+
+1. **Clone the GitHub repository**
+
+```
+git clone https://github.com/lgarma/research-assistant.git
 ```
 
-With **Poetry**
+2. **Set up the virtual environment**
+
 ```bash
-poetry add git+ssh://git@github.com/LyticaMx/research-Research-assistant
+cd research-assistant
+poetry install
+```
+
+3. **Set OpenAI API key**
+
+```bash
+export OPENAI_API_KEY=<your-api-key>
+```
+
+4. **Initiate the webapp**
+
+```bash
+poetry run streamlit run app/01_🧠_Knowledge_collection.py
+```
+
+### Docker Installation
+If you prefer to use Docker, you can set up Research Assistant as follows:
+
+1. **Clone the GitHub repository**
+
+```bash
+git clone https://github.com/your-username/research-assistant.git
+```
+
+2. **Set OpenAI API key**
+
+```bash
+export OPENAI_API_KEY=<your-api-key>
+```
+
+3. **Run Docker Compose**
+
+```bash
+docker-compose up -d
 ```
 
 
-## Documentation
-https://LyticaMx.github.io/research-research-assistant/v0.1.0
+
+
+

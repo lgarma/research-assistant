@@ -94,5 +94,11 @@ def download_and_upsert_documents():
     st.write("Storing documents in vectorstore...")
     _ = state["vector_db"].add_documents(bulk_papers)
     state["vector_db"].col.flush()
-
     st.write("Done!")
+
+
+def clear_recommendations():
+    """Clear the recommendations cache."""
+    for key in state.keys():
+        if "batch" in key:
+            del state[key]
