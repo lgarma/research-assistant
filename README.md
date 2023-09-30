@@ -80,7 +80,7 @@ export OPENAI_API_KEY=<your-api-key>
 3. **Run Docker Compose**
 
 ```bash
-docker-compose up -d
+docker-compose up --build -d
 ```
 
 
