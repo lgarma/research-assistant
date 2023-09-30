@@ -50,7 +50,7 @@ def reset_app():
 def choose_collection(collections: list[str], use_sidebar=True):
     """Choose a collection from a list of collections."""
     collections = sorted([c.replace("_", " ").title() for c in collections])
-    collection_name = st.selectbox("Select a research", options=collections)
+    collection_name = st.selectbox("Select a research", options=collections, index=0)
     collection_name = collection_name.replace(" ", "_").lower()
     state["collection_name"] = collection_name
     connect_to_vector_db()

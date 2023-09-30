@@ -77,4 +77,5 @@ def get_all_documents() -> list[Document]:
     return state["vector_db"].similarity_search(
         query="query",
         k=state["vector_db"].col.num_entities,
+        param={"metric_type": "L2", "params": {"nprobe": 16}},
     )

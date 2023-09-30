@@ -8,30 +8,39 @@ from app.utils.ui import (
     init_session_states,
     start_app,
 )
+from app.utils.utils import clear_recommendations
 from pymilvus import utility
 
 init_session_states()
 state = st.session_state
-sidebar = st.sidebar
-
-sidebar.button("Do nothing button")
+st.sidebar.button("Do nothing button")
 if state.app_state is None:
     start_app()
-# st.write(state)
+st.write(state)
 
 st.title("Explore collections")
 
 collections = utility.list_collections()
 choose_collection(collections=collections, use_sidebar=False)
 display_vector_db_info()
+st.divider()
 
-state["question"] = st.text_input("Ask something", state["nice_collection_name"])
+st.write("## Get paper recommendations")
+st.info("Ask a something and get paper recommendations from the collection.")
+
+state["question"] = st.text_input(
+    "Ask something",
+    state["nice_collection_name"],
+    on_change=clear_recommendations,
+)
 
 if st.checkbox("Generate papers recommendations"):
+
     similar_docs = state["vector_db"].similarity_search(
         query="Represent this sentence for searching relevant passages: "
         + state["question"],
-        k=4,
+        k=12,
+        param={"metric_type": "L2", "params": {"nprobe": 16}},
     )
     papers = [
         {
@@ -44,11 +53,11 @@ if st.checkbox("Generate papers recommendations"):
         for doc in similar_docs
     ]
 
-    n_rows = state["rows"]
+    n_rows = state["rows"]  # starts at 2 rows
     n_cols = 2
     n_papers = 4
     for row in range(n_rows):
-        # Label batch of n_papers
+        # Start a new batch every n_papers
         if row * n_cols % n_papers == 0 and f"batch{row*n_cols//n_papers}" not in state:
             chat_labels = ScorePapersAgent(
                 question=state["question"],

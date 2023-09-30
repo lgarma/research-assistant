@@ -14,6 +14,7 @@ from pymilvus import utility
 init_session_states()
 state = st.session_state
 sidebar = st.sidebar
+st.write(state)
 
 sidebar.button("Do nothing button")
 if state.app_state is None:
@@ -24,10 +25,9 @@ st.title("Topic models")
 
 collections = utility.list_collections()
 choose_collection(collections=collections, use_sidebar=False)
-
 display_vector_db_info()
 
-if st.checkbox("Create topic model for this collection"):
+if st.checkbox("Topic model for this collection"):
     topic_model = TopicModel()
 
     if os.path.exists(f"./cache/{state['collection_name']}/topic_model_docs"):
