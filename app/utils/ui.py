@@ -2,6 +2,7 @@
 
 import streamlit as st
 from app.utils.vector_database import connect_to_vector_db
+from dotenv import find_dotenv, load_dotenv
 from langchain.embeddings import HuggingFaceEmbeddings
 from pymilvus import connections
 
@@ -32,12 +33,13 @@ def init_session_states():
 def start_app():
     """Start the app.
 
-    Connect to Milvus and initialize the llm cache.
+    Connect to Milvus default, set app_state to initialized and load .env file.
     """
     # langchain.llm_cache = SQLiteCache(database_path=".app.db")
     milvus_connection = {"alias": "default", "host": "localhost", "port": 19530}
     connections.connect(**milvus_connection)
     state.app_state = "initialized"
+    load_dotenv(find_dotenv())
 
 
 def reset_app():

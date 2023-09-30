@@ -1,4 +1,6 @@
 """Utility functions for the app."""
+import os
+
 from app.utils.prompts import first_keywords_prompt, refine_keywords_prompt
 from app.utils.utils import get_arxiv_abstracts
 from langchain.chat_models import ChatOpenAI
@@ -16,11 +18,13 @@ from pydantic import BaseModel, Field
 instruct = OpenAI(
     model="gpt-3.5-turbo-instruct",
     temperature=0.01,
+    openai_api_key=os.environ["OPENAI_API_KEY"],
 )
 
 chat = ChatOpenAI(
     model="gpt-3.5-turbo",
     temperature=0.01,
+    openai_api_key=os.environ["OPENAI_API_KEY"],
 )
 
 
