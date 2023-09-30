@@ -37,26 +37,31 @@ Make sure you have one of the following installed:
 
 ### Cloning the Repository
 
-1. **Clone the GitHub repository**
+1. **Install Milvus**
+
+Follow the instructions to [install Milvus](https://milvus.io/docs/install_standalone-docker.md) and
+start the docker container.
+
+2. **Clone the GitHub repository**
 
 ```
 git clone https://github.com/lgarma/research-assistant.git
 ```
 
-2. **Set up the virtual environment**
+3. **Set up the virtual environment**
 
 ```bash
 cd research-assistant
 poetry install
 ```
 
-3. **Set OpenAI API key**
+4. **Set OpenAI API key**
 
 ```bash
 export OPENAI_API_KEY=<your-api-key>
 ```
 
-4. **Initiate the webapp**
+5. **Initiate the webapp**
 
 ```bash
 poetry run streamlit run app/01_🧠_Knowledge_collection.py
@@ -65,7 +70,7 @@ poetry run streamlit run app/01_🧠_Knowledge_collection.py
 ### Docker Installation
 If you prefer to use Docker, you can set up Research Assistant as follows:
 
-1. **Clone the GitHub repository**
+1. **Clone this GitHub repository**
 
 ```bash
 git clone https://github.com/your-username/research-assistant.git
