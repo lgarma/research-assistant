@@ -17,19 +17,34 @@ pymilvus = "2.3.0"
 bertopic = "0.15.0"
 langchain = "0.0.285"
 streamlit = "1.27.0"
-torch = "2.0.0"
-nvidia-cublas-cu11 = "11.10.3.66"
-nvidia-cuda-cupti-cu11 = "11.7.101"
-nvidia-cuda-nvrtc-cu11 = "11.7.99"
-nvidia-cuda-runtime-cu11 = "11.7.99"
-nvidia-cudnn-cu11 = "8.5.0.96"
-nvidia-cufft-cu11 = "10.9.0.58"
-nvidia-curand-cu11 = "10.2.10.91"
-nvidia-cusolver-cu11 = "11.4.0.1"
-nvidia-cusparse-cu11 = "11.7.4.91"
-nvidia-nccl-cu11 = "2.14.3"
-nvidia-nvtx-cu11 = "11.7.91"
+torch = {version="2.0.0", optional=true}
+nvidia-cublas-cu11 = {version="11.10.3.66", optional=true}
+nvidia-cuda-cupti-cu11 = {version="11.7.101", optional=true}
+nvidia-cuda-nvrtc-cu11 = {version="11.7.99", optional=true}
+nvidia-cuda-runtime-cu11 = {version="11.7.99", optional=true}
+nvidia-cudnn-cu11 = {version="8.5.0.96", optional=true}
+nvidia-cufft-cu11 = {version="10.9.0.58", optional=true}
+nvidia-curand-cu11 = {version="10.2.10.91", optional=true}
+nvidia-cusolver-cu11 = {version="11.4.0.1", optional=true}
+nvidia-cusparse-cu11 = {version="11.7.4.91", optional=true}
+nvidia-nccl-cu11 = {version="2.14.3", optional=true}
+nvidia-nvtx-cu11 = {version="11.7.91", optional=true}
 
+[tool.poetry.extras]
+nvidia = [
+    "torch",
+    "nvidia-cublas-cu11",
+    "nvidia-cuda-cupti-cu11",
+    "nvidia-cuda-nvrtc-cu11",
+    "nvidia-cuda-runtime-cu11",
+    "nvidia-cudnn-cu11",
+    "nvidia-cufft-cu11",
+    "nvidia-curand-cu11",
+    "nvidia-cusolver-cu11",
+    "nvidia-cusparse-cu11",
+    "nvidia-nccl-cu11",
+    "nvidia-nvtx-cu11",
+]
 
 [tool.poetry.group.dev.dependencies]
 black = "22.1.0"
