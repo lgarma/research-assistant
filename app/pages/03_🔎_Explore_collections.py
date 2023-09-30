@@ -13,10 +13,8 @@ from pymilvus import utility
 
 init_session_states()
 state = st.session_state
-st.sidebar.button("Do nothing button")
 if state.app_state is None:
     start_app()
-st.write(state)
 
 st.title("Explore collections")
 

@@ -11,7 +11,6 @@ from utils.ui import (
     choose_collection,
     display_vector_db_info,
     init_session_states,
-    reset_app,
     start_app,
 )
 
@@ -23,18 +22,16 @@ if state.app_state is None:
     start_app()
 
 st.title("Research Assistant")
-st.sidebar.button("Reset app", on_click=reset_app)
-st.sidebar.button("Do nothing button")
+# st.sidebar.button("Reset app", on_click=reset_app)
+# st.sidebar.button("Do nothing button")
 
 
 collections = utility.list_collections()
-if len(collections) > 0:
-    if st.checkbox(
-        "Continue previous research?", value=False, on_change=disconnect_from_vector_db
-    ):
-        # defines cache, cache_embedder, vector_db and collection_name
-        choose_collection(collections=collections)
-        display_vector_db_info()
+if len(collections) > 0 and st.checkbox(
+    "Continue previous research?", value=False, on_change=disconnect_from_vector_db
+):
+    choose_collection(collections=collections)
+    display_vector_db_info()
 
 
 st.divider()

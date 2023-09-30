@@ -14,9 +14,7 @@ from pymilvus import utility
 init_session_states()
 state = st.session_state
 sidebar = st.sidebar
-st.write(state)
 
-sidebar.button("Do nothing button")
 if state.app_state is None:
     start_app()
 
