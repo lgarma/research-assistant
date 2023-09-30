@@ -35,6 +35,9 @@ Make sure you have one of the following installed:
 - Poetry
 - Docker and Docker Compose
 
+Also, you will need an OpenAI developer account and an API key. You can get one
+[here](https://platform.openai.com/).
+
 ### Cloning the Repository
 
 1. **Install Milvus**
@@ -55,10 +58,10 @@ cd research-assistant
 poetry install
 ```
 
-4. **Set OpenAI API key**
+4. **Set your OpenAI API key**
 
 ```bash
-export OPENAI_API_KEY=<your-api-key>
+echo "OPENAI_API_KEY=your-api-key" > .env
 ```
 
 5. **Initiate the webapp**
@@ -73,22 +76,17 @@ If you prefer to use Docker, you can set up Research Assistant as follows:
 1. **Clone this GitHub repository**
 
 ```bash
-git clone https://github.com/your-username/research-assistant.git
+git clone https://github.com/lgarma/research-assistant.git
 ```
 
-2. **Set OpenAI API key**
+2. **Set your OpenAI API key**
 
 ```bash
-export OPENAI_API_KEY=<your-api-key>
+echo "OPENAI_API_KEY=your-api-key" > .env
 ```
 
-3. **Run Docker Compose**
+3. **Build and run the docker container**
 
 ```bash
-docker-compose up -d
+docker-compose up --build -d
 ```
-
-
-
-
-
