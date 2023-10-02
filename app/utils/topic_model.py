@@ -63,7 +63,7 @@ class TopicModel:
             }
         if hdbscan_params is None:
             hdbscan_params = {
-                "min_cluster_size": 8,
+                "min_cluster_size": 15,
                 "metric": "euclidean",
                 "cluster_selection_method": "eom",
                 "prediction_data": True,
@@ -108,6 +108,7 @@ class TopicModel:
             embeddings=self.embeddings,
         )
         self.save_model()
+        state["topic_model_fitted"] = True
 
     def save_model(self):
         """Save the topic model."""
@@ -120,14 +121,22 @@ class TopicModel:
 
     def visualize_documents(self, hide_annotations=False) -> Figure:
         """Visualize the documents."""
-        titles = [
-            (
-                f"{doc.metadata['title']}<br>"
-                f"{doc.metadata['authors']}<br>"
-                f"{doc.metadata['published']}"
-            )
-            for doc in self.documents
-        ]
+        hover = []
+        for doc in self.documents:
+            title = f"{doc.metadata['title']}<br>"
+            # divide authors in lines of 6 authors
+            authors_list = doc.metadata["authors"].split(",")
+            authors = ""
+            for i, author in enumerate(authors_list):
+                authors += f"{author}"
+                authors += (
+                    "<br>"
+                    if (i % 5 == 0 and i != 0) or i == len(authors_list) - 1
+                    else ", "
+                )
+            published = f"{doc.metadata['published']}<br>"
+            hover.append(title + authors + published)
+
         reduced_embeddings = UMAP(
             n_neighbors=15,
             n_components=2,
@@ -138,7 +147,7 @@ class TopicModel:
 
         self.get_custom_labels()
         return self.topic_model.visualize_documents(
-            docs=titles,
+            docs=hover,
             reduced_embeddings=reduced_embeddings,
             title=f'<b> {state["nice_collection_name"]} </b>',
             custom_labels=True,
@@ -156,16 +165,18 @@ class TopicModel:
         topics = self.topic_model.get_topics()
 
         custom_labels = [
-            f"{get_first_words(topics[topic][0][0], 4)} ..." for topic in topics
+            f"{get_first_words(topics[topic][0][0], 5)} ..." for topic in topics
         ]
         self.topic_model.set_topic_labels(custom_labels)
 
     def load_model(self):
         """Load a pre-existing topic model."""
+        st.write("Loading pre-existing topic model from cache...")
         self.topic_model = BERTopic.load(
             path=f"./cache/{state['collection_name']}/topic_model_docs",
             embedding_model=state["embedding_model"].model_name,
         )
+        state["topic_model_fitted"] = True
 
     def visualize_over_time(self):
         """Visualize the topics over time."""
@@ -193,3 +204,9 @@ class TopicModel:
 
         df["Representation"] = df["Representation"].apply(convert_to_string)
         return df.iloc[range(1, len(df))]
+
+
+def restart_topic_model():
+    """Restart the topic model."""
+    del state["topic_model"]
+    state["topic_model_fitted"] = False

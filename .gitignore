@@ -152,7 +152,6 @@ cache/
 .app.db
 
 # Images
-*.png
 *.jpg
 *.jpeg
 *.svg

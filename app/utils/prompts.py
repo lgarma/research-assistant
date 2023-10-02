@@ -29,6 +29,6 @@ def refine_keywords_prompt(question: str, top_papers: list[str]) -> str:
         "Here is a list of papers that could be useful: \n\n"
         f"Papers: {top_papers}. \n\n"
         "Give me a list of keywords that best describe the topics of these papers."
-        "Separate the keywords with commas. Keep the list short. Be specific. \n\n"
+        "Separate the keywords with commas. Do not overextend. \n\n"
         "Sure, here is a relevant keyword list: ["
     )

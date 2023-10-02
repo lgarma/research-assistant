@@ -30,14 +30,14 @@ def get_arxiv_abstracts(
     else:
         client = arxiv.Client(page_size=100, delay_seconds=3, num_retries=7)
 
+    sort_by = (
+        arxiv.SortCriterion.Relevance
+        if sort_by == "Relevance"
+        else arxiv.SortCriterion.SubmittedDate
+    )
+
     results = client.results(
-        arxiv.Search(
-            query=query,
-            max_results=max_results,
-            sort_by=arxiv.SortCriterion.Relevance
-            if sort_by == "Relevance"
-            else arxiv.SortCriterion.SubmittedDate,
-        )
+        arxiv.Search(query=query, max_results=max_results, sort_by=sort_by)
     )
     docs = []
     for i, result in enumerate(results):
@@ -83,6 +83,7 @@ def download_and_upsert_documents():
     bulk_papers = get_arxiv_abstracts(
         query=", ".join(state["refined_keywords"][:10]),
         max_results=state["max_papers"],
+        sort_by=state["sort_by"],
     )
 
     st.write("Total documents", len(bulk_papers))
