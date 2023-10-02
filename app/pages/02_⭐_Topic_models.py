@@ -1,9 +1,10 @@
 """Topic models page."""
 
+
 import os
 
 import streamlit as st
-from app.utils.topic_model import TopicModel
+from app.utils.topic_model import TopicModel, restart_topic_model
 from app.utils.ui import (
     choose_collection,
     display_vector_db_info,
@@ -23,7 +24,7 @@ if state.app_state is None:
 st.title("Topic models")
 
 collections = utility.list_collections()
-choose_collection(collections=collections)
+choose_collection(collections=collections, on_change=restart_topic_model)
 display_vector_db_info()
 st.divider()
 
@@ -48,11 +49,15 @@ else:
     st.button("Fit topic model", on_click=state["topic_model"].fit_model)
 
 if state["topic_model_fitted"]:
+    st.info(
+        "**TIP:** If you fit few topics, is possible your research collections has"
+        "few documents. Try adding more papers to get more topics"
+    )
     topics = state["topic_model"].topic_model.get_topics()
     st.write("### Topics")
     st.write("The following topics were found in the research collection:")
 
-    st.dataframe(state["topic_model"].topics_info())
+    st.dataframe(state["topic_model"].topics_info().head(20))
     st.divider()
 
     st.write("### Topic visualization")

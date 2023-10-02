@@ -53,11 +53,14 @@ def reset_app():
     init_session_states()
 
 
-def choose_collection(collections: list[str]):
+def choose_collection(collections: list[str], on_change=None):
     """Choose a collection from a list of collections."""
     collections = sorted([c.replace("_", " ").title() for c in collections])
     collection_name = st.selectbox(
-        "Select a research collection:", options=collections, index=0
+        "Select a research collection:",
+        options=collections,
+        index=0,
+        on_change=on_change,
     )
     collection_name = collection_name.replace(" ", "_").lower()
     state["collection_name"] = collection_name
