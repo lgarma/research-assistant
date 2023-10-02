@@ -14,9 +14,15 @@ aspects of their work.
 - **Keyword Generation**: Generate highly relevant keywords for your research topic.
 This agent, works in two steps. First, an LLM assistant is prompted to generates a
 small list of relevant keywords, using its own internal parameters. Usually, this
-first list is good, but not very specific and lacks domain-specific terms.
+first list is good, but tends to be repetitive and lacks in-domain knowledge.
 To refine the list, a small sample of titles from arxiv is fed back to the agent,
 which uses them to generate a new list of keywords that is more tailored to your research.
+
+
+<p align="center">
+  <img src="app/img/keyword_agent.png" alt="Keyword Agent" width="600"/>
+</p>
+
 - **Knowledge database**: Download papers from arxiv using the refined list of keywords.
 The abstracts are vectorized using **bge-small-en-v1.5** and saved in a **Milvus**
 vector database.
