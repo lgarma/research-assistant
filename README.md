@@ -20,7 +20,7 @@ which uses them to generate a new list of keywords that is more tailored to your
 
 
 <p align="center">
-  <img src="app/img/keyword_agent.png" alt="Keyword Agent" width="600"/>
+  <img src="img/keyword_agent.png" alt="Keyword Agent" width="600"/>
 </p>
 
 - **Knowledge database**: Download papers from arxiv using the refined list of keywords.
