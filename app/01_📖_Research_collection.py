@@ -18,7 +18,7 @@ from utils.ui import (
 init_session_states()
 state = st.session_state
 sidebar = st.sidebar
-st.write(state)
+# st.write(state)
 
 if state.app_state is None:
     start_app()
@@ -83,9 +83,9 @@ if "refined_keywords" in state:
 
     state["max_papers"] = cols[1].number_input(
         "Max number of papers to download",
-        value=100,
-        min_value=10,
-        max_value=2000,
+        value=1000,
+        min_value=100,
+        max_value=3000,
         help="Press enter to update the number of papers to download.",
     )
 
