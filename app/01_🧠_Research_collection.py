@@ -11,12 +11,14 @@ from utils.ui import (
     choose_collection,
     display_vector_db_info,
     init_session_states,
+    sidebar_collection_info,
     start_app,
 )
 
 init_session_states()
 state = st.session_state
 sidebar = st.sidebar
+st.write(state)
 
 if state.app_state is None:
     start_app()
@@ -36,30 +38,19 @@ if len(collections) > 0 and st.checkbox(
 
 st.divider()
 
-st.write("## Search Arxiv abstracts")
-if "collection_name" in state:
-    info = (
-        "Abstracts will be saved in the "
-        f"**'{state['nice_collection_name']}'** collection."
-    )
-else:
-    info = (
-        "Abstracts will be saved in a new collection named after your research "
-        "question."
-    )
-
-st.info(info)
+st.write("## Get knowledge for your research")
 question = st.text_input(
     "What do you want to research today?",
-    value="Recent discoveries made by the JWST?",
+    value="Recent discoveries made by the JWST",
     key="question",
     on_change=disconnect_from_vector_db,
 )
 
-if st.button("Generate keyword suggestions"):
+if st.button("Generate keywords"):
     state["first_keywords"], state["refined_keywords"] = KeywordsAgent(
         question=question,
-        n_exploratory_papers=30,
+        n_exploratory_papers=50,
+        sort_by="Relevance",
     )()
 
 more_keywords = st.empty()
@@ -95,24 +86,57 @@ if "refined_keywords" in state:
         value=100,
         min_value=10,
         max_value=2000,
+        help="Press enter to update the number of papers to download.",
     )
+
+    state["sort_by"] = cols[1].selectbox("Sort by", ["Relevance", "Submitted date"])
     state["placeholder"] = st.empty()
-    st.write("---")
 
-    if state["vector_db"].col.num_entities > 0:
-        st.info("Explore the collection in the **'Explore collections'** tab.")
-        st.link_button(
-            "Explore collections", url="http://localhost:8501/Explore_collections"
+sidebar_collection_info()
+
+
+st.divider()
+
+if "vector_db" in state:
+    st.write("## Example abstract in the collection:")
+    with st.expander("Show example abstract"):
+        query = random.choice(
+            [
+                "science",
+                "astronomy",
+                "physics",
+                "biology",
+                "chemistry",
+                "mathematics",
+                "geology",
+                "psychology",
+                "sociology",
+                "economics",
+                "history",
+                "philosophy",
+                "literature",
+                "art",
+            ]
         )
-        st.divider()
 
-        with st.expander("Example abstract in the collection"):
-            doc = state["vector_db"].similarity_search(
-                query="science",
-                k=1,
-            )
-            st.write("Title:", doc[0].metadata["title"])
-            st.write("Authors:", doc[0].metadata["authors"])
-            st.write("Published:", doc[0].metadata["published"])
-            st.write("Link:", doc[0].metadata["link"])
-            st.write("Abstract:", doc[0].page_content)
+        doc = state["vector_db"].similarity_search(
+            query=query,
+            k=1,
+        )
+        st.write("Title:", doc[0].metadata["title"])
+        st.write("Authors:", doc[0].metadata["authors"])
+        st.write("Published:", doc[0].metadata["published"])
+        st.write("Link:", doc[0].metadata["link"])
+        st.write("Abstract:", doc[0].page_content)
+
+    st.divider()
+    st.write("## Explore the collection")
+    col1, col2 = st.columns(2)
+    col1.success("**Common topics, new trends, and research ideas:**")
+    col1.link_button("Explore topics", url="http://localhost:8501/Topic_models")
+
+    col2.success("**Paper recommendations, Question answering:**")
+    col2.link_button(
+        "Explore collections", url="http://localhost:8501/Explore_collections"
+    )
+    st.divider()
