@@ -108,6 +108,7 @@ class TopicModel:
             embeddings=self.embeddings,
         )
         self.save_model()
+        state["topic_model_fitted"] = True
 
     def save_model(self):
         """Save the topic model."""
@@ -162,10 +163,12 @@ class TopicModel:
 
     def load_model(self):
         """Load a pre-existing topic model."""
+        st.write("Loading pre-existing topic model from cache...")
         self.topic_model = BERTopic.load(
             path=f"./cache/{state['collection_name']}/topic_model_docs",
             embedding_model=state["embedding_model"].model_name,
         )
+        state["topic_model_fitted"] = True
 
     def visualize_over_time(self):
         """Visualize the topics over time."""
