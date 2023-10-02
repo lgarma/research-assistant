@@ -73,7 +73,7 @@ echo "OPENAI_API_KEY=your-api-key" > .env
 5. **Initiate the webapp**
 
 ```bash
-poetry run streamlit run app/01_🧠_Knowledge_collection.py
+poetry run streamlit run app/01_🧠_Research_collection.py
 ```
 
 ### Docker Installation
