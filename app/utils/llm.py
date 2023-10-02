@@ -45,12 +45,21 @@ class KeywordsAgent:
     Parameters:
         question (str):
             The question that the user wants to research.
+
+        n_exploratory_papers (int):
+            The number of papers to download from arxiv to refine the keywords.
+
+        sort_by (str):
+            The sorting criteria for the arxiv papers.
     """
 
-    def __init__(self, question: str, n_exploratory_papers: int = 30):
+    def __init__(
+        self, question: str, n_exploratory_papers: int = 30, sort_by="Relevance"
+    ):
         """Initialize the agent."""
         self.question = question
         self.n_exploratory_papers = n_exploratory_papers
+        self.sort_by = sort_by
 
     def _first_keyword_suggestion(self) -> str:
         """Get the first keyword suggestion from instruct gpt."""
@@ -69,7 +78,7 @@ class KeywordsAgent:
         top_papers = get_arxiv_abstracts(
             query=first_keywords,
             max_results=self.n_exploratory_papers,
-            sort_by="Relevance",
+            sort_by=self.sort_by,
         )
         titles = [paper.metadata["title"] for paper in top_papers]
 
