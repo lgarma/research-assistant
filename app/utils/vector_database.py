@@ -12,8 +12,9 @@ def connect_to_vector_db():
     """Connect to pre-existing vector database.
 
     Sets up a cached embedder to save the embeddings
-    The cached documents can be checked for duplicated documents.
+    The cached documents prevent duplicated documents.
     """
+    state["nice_collection_name"] = state["collection_name"].replace("_", " ").title()
     state["cache"] = LocalFileStore(f"./cache/{state['collection_name']}")
     state["cached_embedder"] = CacheBackedEmbeddings.from_bytes_store(
         underlying_embeddings=state["embedding_model"],
