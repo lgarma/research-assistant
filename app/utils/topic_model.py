@@ -63,7 +63,7 @@ class TopicModel:
             }
         if hdbscan_params is None:
             hdbscan_params = {
-                "min_cluster_size": 8,
+                "min_cluster_size": 10,
                 "metric": "euclidean",
                 "cluster_selection_method": "eom",
                 "prediction_data": True,

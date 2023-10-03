@@ -18,7 +18,7 @@ init_session_states()
 state = st.session_state
 sidebar = st.sidebar
 
-if state.app_state is None:
+if "app_state" not in state:
     start_app()
 
 st.title("Topic models")
@@ -30,8 +30,10 @@ st.divider()
 
 sidebar_collection_info()
 
-if "topic_model" not in state:
-    state["topic_model"] = TopicModel()
+# if "topic_model" not in state:
+sidebar.button("Restart topic model", on_click=restart_topic_model)
+
+state["topic_model"] = TopicModel()
 
 
 if os.path.exists(f"./cache/{state['collection_name']}/topic_model_docs"):

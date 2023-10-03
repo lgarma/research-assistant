@@ -19,8 +19,7 @@ def set_state_if_absent(key, value):
 
 
 def init_session_states():
-    """Initialize the app."""
-    set_state_if_absent(key="app_state", value=None)
+    """Some session states, that should always be present."""
     set_state_if_absent(key="rows", value=2)
     set_state_if_absent(
         key="embedding_model",
@@ -42,8 +41,8 @@ def start_app():
     # langchain.llm_cache = SQLiteCache(database_path=".app.db")
     milvus_connection = {"alias": "default", "host": "localhost", "port": 19530}
     connections.connect(**milvus_connection)
-    state.app_state = "initialized"
     load_dotenv(find_dotenv())
+    state["app_state"] = "initialized"
 
 
 def reset_app():

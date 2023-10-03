@@ -13,7 +13,7 @@ from pymilvus import utility
 
 init_session_states()
 state = st.session_state
-if state.app_state is None:
+if "app_state" not in state:
     start_app()
 
 st.title("Explore collections")

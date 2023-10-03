@@ -195,3 +195,6 @@ volumes/
 # Competition
 solution/
 solution.zip
+
+.flake8
+.jenkins_flows

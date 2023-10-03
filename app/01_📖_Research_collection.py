@@ -18,9 +18,8 @@ from utils.ui import (
 init_session_states()
 state = st.session_state
 sidebar = st.sidebar
-# st.write(state)
 
-if state.app_state is None:
+if "app_state" not in state:
     start_app()
 
 st.title("Research Collections")
