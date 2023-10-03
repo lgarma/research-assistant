@@ -19,7 +19,7 @@ if state.app_state is None:
 st.title("Explore collections")
 
 collections = utility.list_collections()
-choose_collection(collections=collections, use_sidebar=False)
+choose_collection(collections=collections)
 display_vector_db_info()
 st.divider()
 
