@@ -39,7 +39,7 @@ research collection. Use the powerful visualizations to identify research topics
 outliers, and new trends in the field.
 
 <p align="center">
-  <img src="img/Research landscape.png" alt="keyword" width="400"/>
+  <img src="img/research landscape.png" alt="keyword" width="400"/>
   <img src="img/topic_over_time.png" alt="topic over time" width="400"/>
 </p>
 
