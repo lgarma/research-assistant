@@ -77,8 +77,8 @@ if state["topic_model_fitted"]:
     else:
         document_viz = state["topic_model"].visualize_documents()
         document_viz.update_layout(showlegend=False)
-    st.plotly_chart(document_viz, use_container_width=True)
+    st.plotly_chart(document_viz, use_container_width=False)
 
     if st.checkbox("Show topics over time"):
         topics_over_time_viz = state["topic_model"].visualize_over_time()
-        st.plotly_chart(topics_over_time_viz, use_container_width=True)
+        st.plotly_chart(topics_over_time_viz, use_container_width=False)
