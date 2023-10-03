@@ -191,3 +191,7 @@ build.py
 
 # Docker
 volumes/
+
+# Competition
+solution/
+solution.zip
