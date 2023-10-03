@@ -4,7 +4,7 @@
 import os
 
 import streamlit as st
-from app.utils.topic_model import TopicModel, restart_topic_model
+from app.utils.topic_model import fit_model, load_model, restart_topic_model
 from app.utils.ui import (
     choose_collection,
     display_vector_db_info,
@@ -32,9 +32,7 @@ sidebar_collection_info()
 
 # if "topic_model" not in state:
 sidebar.button("Restart topic model", on_click=restart_topic_model)
-
-state["topic_model"] = TopicModel()
-
+# restart_topic_model()
 
 if os.path.exists(f"./cache/{state['collection_name']}/topic_model_docs"):
     st.success(
@@ -43,12 +41,12 @@ if os.path.exists(f"./cache/{state['collection_name']}/topic_model_docs"):
         "the topic model, you should recalculate it."
     )
     col1, col2 = st.columns(2)
-    col1.button("Load topic model from cache", on_click=state["topic_model"].load_model)
-    col2.button("Recalculate topic model", on_click=state["topic_model"].fit_model)
+    col1.button("Load topic model from cache", on_click=load_model)
+    col2.button("Recalculate topic model", on_click=fit_model)
 
 else:
     st.info("Fit a topic model to extract the underlying topics in your collection.")
-    st.button("Fit topic model", on_click=state["topic_model"].fit_model)
+    st.button("Fit topic model", on_click=fit_model)
 
 if state["topic_model_fitted"]:
     st.info(
@@ -66,8 +64,6 @@ if state["topic_model_fitted"]:
 
     st.info(
         "**TIPS:** \n\n"
-        "- Hover over the documents to see the paper title, authors and "
-        "publication date. \n\n"
         "- Select an area of the plot to zoom in. \n\n"
         "- Double click on the plot to zoom out. \n\n"
         "- Click a topic in the legend box to hide it. \n\n"

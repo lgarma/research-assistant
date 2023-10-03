@@ -101,7 +101,6 @@ class TopicModel:
 
     def fit_model(self):
         """Fit a topic model to a set of documents and embeddings."""
-        self.__init__()
         contents = [doc.page_content for doc in self.documents]
         self.topic_model.fit(
             documents=contents,
@@ -171,7 +170,6 @@ class TopicModel:
 
     def load_model(self):
         """Load a pre-existing topic model."""
-        st.write("Loading pre-existing topic model from cache...")
         self.topic_model = BERTopic.load(
             path=f"./cache/{state['collection_name']}/topic_model_docs",
             embedding_model=state["embedding_model"].model_name,
@@ -179,7 +177,10 @@ class TopicModel:
         state["topic_model_fitted"] = True
 
     def visualize_over_time(self):
-        """Visualize the topics over time."""
+        """Visualize the topics over time.
+
+        Uses the KeyBERTInspired representation model, to save tokens and time.
+        """
         self.topic_model.representation_model = KeyBERTInspired
         timestamps = [
             datetime.datetime(doc.metadata["published"], 1, 1) for doc in self.documents
@@ -209,5 +210,20 @@ class TopicModel:
 
 def restart_topic_model():
     """Restart the topic model."""
-    del state["topic_model"]
+    if "topic_model" in state:
+        del state["topic_model"]
     state["topic_model_fitted"] = False
+
+
+def load_model():
+    """Restart the topic model and load a pre-existing model."""
+    restart_topic_model()
+    state["topic_model"] = TopicModel()
+    state["topic_model"].load_model()
+
+
+def fit_model():
+    """Restart the topic model and fit a new model."""
+    restart_topic_model()
+    state["topic_model"] = TopicModel()
+    state["topic_model"].fit_model()
