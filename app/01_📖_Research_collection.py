@@ -23,10 +23,7 @@ sidebar = st.sidebar
 if state.app_state is None:
     start_app()
 
-st.title("Research Assistant")
-# st.sidebar.button("Reset app", on_click=reset_app)
-# st.sidebar.button("Do nothing button")
-
+st.title("Research Collections")
 
 collections = utility.list_collections()
 if len(collections) > 0 and st.checkbox(
@@ -38,10 +35,10 @@ if len(collections) > 0 and st.checkbox(
 
 st.divider()
 
-st.write("## Get knowledge for your research")
+st.write("## Build a research collection")
 question = st.text_input(
     "What do you want to research today?",
-    value="Recent discoveries made by the JWST",
+    value="JWST discoveries",
     key="question",
     on_change=disconnect_from_vector_db,
 )
