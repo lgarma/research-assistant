@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 from app.utils.vector_database import get_all_documents
 from bertopic import BERTopic
-from bertopic.representation import OpenAI
+from bertopic.representation import KeyBERTInspired, OpenAI
 from hdbscan import HDBSCAN
 from plotly.graph_objs import Figure
 from umap import UMAP
@@ -63,7 +63,7 @@ class TopicModel:
             }
         if hdbscan_params is None:
             hdbscan_params = {
-                "min_cluster_size": 15,
+                "min_cluster_size": 8,
                 "metric": "euclidean",
                 "cluster_selection_method": "eom",
                 "prediction_data": True,
@@ -180,6 +180,7 @@ class TopicModel:
 
     def visualize_over_time(self):
         """Visualize the topics over time."""
+        self.topic_model.representation_model = KeyBERTInspired
         timestamps = [
             datetime.datetime(doc.metadata["published"], 1, 1) for doc in self.documents
         ]
