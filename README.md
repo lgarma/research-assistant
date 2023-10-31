@@ -56,27 +56,32 @@ papers are a **must-read**.
 
 ## Getting Started
 
-Make sure you have one of the following installed:
-
-- [Poetry](https://python-poetry.org/docs/#installation)
-- [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
-
-Also, you will need an [OpenAI developer account](https://platform.openai.com/) and an API key.
+To use the streamlit app, you will need an [OpenAI developer account](https://platform.openai.com/) and an API key.
+By default, research collections uses *gpt-3.5-turbo* as the default LLM model.
 
 ### Cloning the Repository
 
-1. **Install Milvus**
+1. Install Poetry
 
-Follow the instructions to [install Milvus](https://milvus.io/docs/install_standalone-docker.md) and
-start the docker container.
+[Poetry](https://python-poetry.org/docs/#installation) is a tool for dependency management and packaging in Python.
+It uses the pyproject.toml file to manage dependencies and build the package.
 
-2. **Clone the GitHub repository**
+2. **Install Milvus**
+
+Milvus is an open-source vector database that provides state-of-the-art similarity
+search.
+
+Download Milvus from [here](https://milvus.io/docs/install_standalone-docker.md)
+and follow the instructions to install it the latest version. It requires Docker
+and Docker Compose.
+
+3. **Clone this GitHub repository**
 
 ```
 git clone https://github.com/lgarma/research-assistant.git
 ```
 
-3. **Set up the virtual environment**
+4. **Set up the virtual environment with poetry**
 
 ```bash
 cd research-assistant
@@ -116,3 +121,7 @@ echo "OPENAI_API_KEY=your-api-key" > .env
 ```bash
 docker-compose up --build -d
 ```
+
+4. **Open the streamlit app**
+
+The streamlit app should be running on http://localhost:8502

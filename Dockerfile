@@ -23,4 +23,4 @@ EXPOSE 8602
 
 HEALTHCHECK CMD curl --fail http://localhost:8602/_stcore/health
 
-ENTRYPOINT ["poetry", "run", "streamlit", "run", "app/01_📖_Research_collection.py", "--server.port=8602", "--server.enableCORS=false", "--server.enableXsrfProtection=false", "--theme.base=dark"    , "--theme.primaryColor=#9333ea", "--theme.font=monospace", "--theme.textColor=#f1f5f9", "--server.fileWatcherType=none", "--browser.serverAddress=localhost"]
+ENTRYPOINT ["poetry", "run", "streamlit", "run", "app/01_📖_Research_collection.py", "--server.port=8602", "--server.enableCORS=false", "--server.enableXsrfProtection=false", "--theme.base=light"    , "--theme.primaryColor=#9333ea", "--theme.font=monospace", "--theme.textColor=#f1f5f9", "--server.fileWatcherType=none", "--browser.serverAddress=localhost"]
