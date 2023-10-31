@@ -54,14 +54,17 @@ papers are a **must-read**.
 
 ---
 
-## Getting Started
+# Getting Started
 
 To use the streamlit app, you will need an [OpenAI developer account](https://platform.openai.com/) and an API key.
-By default, research collections uses *gpt-3.5-turbo* as the default LLM model.
+By default, the app uses *gpt-3.5-turbo* LLM model.
 
-### Cloning the Repository
+You will also need to install [Docker](https://docs.docker.com/get-docker/)
+and Docker Compose in order to run Milvus.
 
-1. Install Poetry
+### Option 1: Clone the Repository
+
+1. **Install Poetry**
 
 [Poetry](https://python-poetry.org/docs/#installation) is a tool for dependency management and packaging in Python.
 It uses the pyproject.toml file to manage dependencies and build the package.
@@ -89,19 +92,19 @@ poetry install
 poetry shell
 ```
 
-4. **Set your OpenAI API key**
+5. **Set your OpenAI API key**
 
 ```bash
 echo "OPENAI_API_KEY=your-api-key" > .env
 ```
 
-5. **Initiate the streamlit app**
+6. **Initiate the streamlit app**
 
 ```bash
 poetry run streamlit run app/01_📖_Research_collection.py
 ```
 
-### Docker Installation
+### Option 2: Docker Installation
 If you prefer to use Docker, you can set up Research Assistant as follows:
 
 1. **Clone this GitHub repository**
